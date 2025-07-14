@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Dashboard - LaundryPro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1a1d29;
+            --secondary: #252836;
+            --accent: #6366f1;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-primary: #ffffff;
+            --text-secondary: #9ca3af;
+            --border: #374151;
+            --surface: #1f2937;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background: var(--primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* Top Navigation Bar */
+        .navbar {
+            background: var(--secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .brand-logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .brand-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 0.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            color: var(--text-primary);
+            border-color: var(--accent);
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            padding: 1.5rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Stats Dashboard */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .stat-icon.pickup { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .stat-icon.delivery { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .stat-icon.completed { background: rgba(99, 102, 241, 0.1); color: var(--accent); }
+        .stat-icon.pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        .stat-trend {
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .trend-up { color: var(--success); }
+        .trend-down { color: var(--danger); }
+
+        /* Filter Tabs */
+        .filter-section {
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .tab-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .tab-btn:hover:not(.active) {
+            color: var(--text-primary);
+            border-color: var(--accent);
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 0.5rem;
+            border-radius: 6px;
+            outline: none;
+        }
+
+        /* Orders Grid */
+        .orders-container {
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .orders-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .orders-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .orders-count {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .orders-grid {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        /* Order Card */
+        .order-card {
+            border-bottom: 1px solid var(--border);
+            transition: all 0.2s ease;
+        }
+
+        .order-card:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .order-card:last-child {
+            border-bottom: none;
+        }
+
+        .order-summary {
+            padding: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .order-info {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex: 1;
+        }
+
+        .order-priority {
+            width: 4px;
+            height: 60px;
+            border-radius: 2px;
+        }
+
+        .priority-high { background: var(--danger); }
+        .priority-medium { background: var(--warning); }
+        .priority-low { background: var(--success); }
+
+        .order-details {
+            flex: 1;
+        }
+
+        .order-number {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 0.25rem;
+        }
+
+        .order-customer {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 0.5rem;
+        }
+
+        .order-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .status-picked { background: rgba(13, 202, 240, 0.1); color: #0dcaf0; border: 1px solid #0dcaf0; }
+        .status-washing { background: rgba(102, 16, 242, 0.1); color: #6610f2; border: 1px solid #6610f2; }
+        .status-ready { background: rgba(25, 135, 84, 0.1); color: #198754; border: 1px solid #198754; }
+        .status-out-for-pickup { background: rgba(255, 193, 7, 0.1); color: #ffc107; border: 1px solid #ffc107; }
+        .status-out-for-delivery { background: rgba(220, 53, 69, 0.1); color: #dc3545; border: 1px solid #dc3545; }
+
+        .action-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 0.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 12px;
+        }
+
+        .action-btn.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .action-btn:hover {
+            color: var(--text-primary);
+            border-color: var(--accent);
+        }
+
+        .collapse-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .collapse-btn.expanded {
+            transform: rotate(180deg);
+        }
+
+        /* Expanded Order Details */
+        .order-expanded {
+            padding: 0 1.5rem 1.5rem;
+            border-top: 1px solid var(--border);
+            background: var(--surface);
+            display: none;
+        }
+
+        .order-expanded.show {
+            display: block;
+        }
+
+        .expanded-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .detail-group {
+            background: var(--secondary);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .detail-title {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            font-weight: 500;
+            word-break: break-word;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            opacity: 0.9;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 1rem;
+            }
+
+            .navbar {
+                padding: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .order-summary {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .order-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .filter-controls {
+                width: 100%;
+            }
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .order-expanded.show {
+            animation: slideIn 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="brand-logo">
+                <i class="fas fa-truck"></i>
+            </div>
+            <div class="brand-text">Delivery Dashboard</div>
+        </div>
+        
+        <div class="nav-user">
+            <div class="user-info">
+                <div class="user-name">{{ current_user.name if current_user else 'Delivery Person' }}</div>
+                <div class="user-role">Delivery Team</div>
+            </div>
+            <div class="nav-actions">
+                <button class="nav-btn" onclick="refreshData()">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button class="nav-btn" onclick="showNotifications()">
+                    <i class="fas fa-bell"></i>
+                </button>
+                <button class="nav-btn" onclick="location.href='/logout'">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Stats Dashboard -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon pickup">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div class="stat-trend trend-up">
+                        <i class="fas fa-arrow-up"></i>
+                        12%
+                    </div>
+                </div>
+                                 <div class="stat-value">{% set pickup_orders = orders|selectattr('status', 'equalto', 'out_for_pickup')|list %}{{ pickup_orders|length if pickup_orders else 0 }}</div>
+                <div class="stat-label">Pending Pickups</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon delivery">
+                        <i class="fas fa-shipping-fast"></i>
+                    </div>
+                    <div class="stat-trend trend-up">
+                        <i class="fas fa-arrow-up"></i>
+                        8%
+                    </div>
+                </div>
+                                 <div class="stat-value">{% set delivery_orders = orders|selectattr('status', 'equalto', 'out_for_delivery')|list %}{{ delivery_orders|length if delivery_orders else 0 }}</div>
+                <div class="stat-label">Out for Delivery</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon completed">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-trend trend-up">
+                        <i class="fas fa-arrow-up"></i>
+                        15%
+                    </div>
+                </div>
+                <div class="stat-value">{{ completed_today or 0 }}</div>
+                <div class="stat-label">Completed Today</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon pending">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-trend trend-down">
+                        <i class="fas fa-arrow-down"></i>
+                        5%
+                    </div>
+                </div>
+                                 <div class="stat-value">{% set processing_orders = orders|selectattr('status', 'in', ['picked', 'washing', 'ready'])|list %}{{ processing_orders|length if processing_orders else 0 }}</div>
+                <div class="stat-label">In Processing</div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="filter-header">
+                <div class="filter-tabs">
+                    <button class="tab-btn {{ 'active' if not type_filter else '' }}" onclick="filterOrders('')">
+                        All Orders
+                    </button>
+                    <button class="tab-btn {{ 'active' if type_filter == 'pickup' else '' }}" onclick="filterOrders('pickup')">
+                        Pickups
+                    </button>
+                    <button class="tab-btn {{ 'active' if type_filter == 'delivery' else '' }}" onclick="filterOrders('delivery')">
+                        Deliveries
+                    </button>
+                </div>
+                
+                <div class="filter-controls">
+                    <select class="filter-select" onchange="filterByPincode(this.value)">
+                        <option value="">All Areas</option>
+                        {% for pincode in pincodes %}
+                        <option value="{{ pincode }}" {{ 'selected' if pincode_filter == pincode else '' }}>{{ pincode }}</option>
+                        {% endfor %}
+                    </select>
+                    
+                    <button class="action-btn" onclick="exportData()">
+                        <i class="fas fa-download"></i>
+                        Export
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders List -->
+        <div class="orders-container">
+            <div class="orders-header">
+                <div class="orders-title">Assigned Orders</div>
+                <div class="orders-count">{{ orders|length }} orders</div>
+            </div>
+            
+            <div class="orders-grid">
+                {% if orders %}
+                    {% for order in orders %}
+                    <div class="order-card">
+                        <div class="order-summary" onclick="toggleOrderDetails({{ order.id }})">
+                            <div class="order-info">
+                                <div class="order-priority {{ 'priority-high' if order.status == 'out_for_pickup' else 'priority-medium' if order.status == 'out_for_delivery' else 'priority-low' }}"></div>
+                                
+                                <div class="order-details">
+                                    <div class="order-number">Order #{{ order.order_number }}</div>
+                                    <div class="order-customer">{{ order.customer.name if order.customer else 'Unknown Customer' }}</div>
+                                    <div class="order-meta">
+                                        <span><i class="fas fa-calendar"></i> {{ order.pickup_date.strftime('%b %d, %Y') if order.pickup_date else 'TBD' }}</span>
+                                        <span><i class="fas fa-clock"></i> {{ order.pickup_time.strftime('%I:%M %p') if order.pickup_time else 'TBD' }}</span>
+                                        <span><i class="fas fa-weight"></i> {{ order.total_weight or 0 }}kg</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="order-actions">
+                                <span class="status-badge status-{{ order.status.replace('_', '-') }}">
+                                    {{ order.status.replace('_', ' ').title() }}
+                                </span>
+                                
+                                {% if order.status == 'out_for_pickup' %}
+                                <button class="action-btn primary" onclick="event.stopPropagation(); updateOrderStatus({{ order.id }}, 'picked')">
+                                    Mark Picked
+                                </button>
+                                {% elif order.status == 'ready' %}
+                                <button class="action-btn primary" onclick="event.stopPropagation(); updateOrderStatus({{ order.id }}, 'out_for_delivery')">
+                                    Out for Delivery
+                                </button>
+                                {% elif order.status == 'out_for_delivery' %}
+                                <button class="action-btn primary" onclick="event.stopPropagation(); updateOrderStatus({{ order.id }}, 'delivered')">
+                                    Mark Delivered
+                                </button>
+                                {% endif %}
+                                
+                                <button class="collapse-btn" id="collapse-{{ order.id }}">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="order-expanded" id="details-{{ order.id }}">
+                            <div class="expanded-grid">
+                                <div class="detail-group">
+                                    <div class="detail-title">Pickup Address</div>
+                                    <div class="detail-value">{{ order.pickup_address or 'Not specified' }}</div>
+                                </div>
+                                
+                                <div class="detail-group">
+                                    <div class="detail-title">Delivery Address</div>
+                                    <div class="detail-value">{{ order.delivery_address or 'Not specified' }}</div>
+                                </div>
+                                
+                                <div class="detail-group">
+                                    <div class="detail-title">Customer Phone</div>
+                                    <div class="detail-value">{{ order.customer.phone if order.customer else 'Not available' }}</div>
+                                </div>
+                                
+                                <div class="detail-group">
+                                    <div class="detail-title">Total Amount</div>
+                                    <div class="detail-value">₹{{ "%.2f"|format(order.total_amount or 0) }}</div>
+                                </div>
+                                
+                                <div class="detail-group">
+                                    <div class="detail-title">Special Instructions</div>
+                                    <div class="detail-value">{{ order.special_instructions or 'None' }}</div>
+                                </div>
+                                
+                                <div class="detail-group">
+                                    <div class="detail-title">Order Items</div>
+                                    <div class="detail-value">{{ order.total_items or 0 }} items ({{ order.total_weight or 0 }}kg)</div>
+                                </div>
+                            </div>
+                            
+                            <div class="action-buttons">
+                                <button class="btn btn-primary" onclick="showOrderMap({{ order.id }})">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    View Map
+                                </button>
+                                
+                                <button class="btn btn-success" onclick="callCustomer('{{ order.customer.phone if order.customer else '' }}')">
+                                    <i class="fas fa-phone"></i>
+                                    Call Customer
+                                </button>
+                                
+                                <button class="btn btn-warning" onclick="reportIssue({{ order.id }})">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    Report Issue
+                                </button>
+                                
+                                <button class="btn btn-primary" onclick="location.href='/order/{{ order.id }}/timeline'">
+                                    <i class="fas fa-history"></i>
+                                    View Timeline
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="fas fa-clipboard-list"></i>
+                        </div>
+                        <h3>No Orders Assigned</h3>
+                        <p>You don't have any orders assigned at the moment. Check back later or contact your supervisor.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle order details expansion
+        function toggleOrderDetails(orderId) {
+            const details = document.getElementById(`details-${orderId}`);
+            const button = document.getElementById(`collapse-${orderId}`);
+            
+            if (details.classList.contains('show')) {
+                details.classList.remove('show');
+                button.classList.remove('expanded');
+            } else {
+                details.classList.add('show');
+                button.classList.add('expanded');
+            }
+        }
+
+        // Filter orders
+        function filterOrders(type) {
+            const currentUrl = new URL(window.location);
+            if (type) {
+                currentUrl.searchParams.set('type', type);
+            } else {
+                currentUrl.searchParams.delete('type');
+            }
+            window.location.href = currentUrl.toString();
+        }
+
+        function filterByPincode(pincode) {
+            const currentUrl = new URL(window.location);
+            if (pincode) {
+                currentUrl.searchParams.set('pincode', pincode);
+            } else {
+                currentUrl.searchParams.delete('pincode');
+            }
+            window.location.href = currentUrl.toString();
+        }
+
+        // Update order status
+        function updateOrderStatus(orderId, newStatus) {
+            if (confirm(`Are you sure you want to mark this order as ${newStatus.replace('_', ' ')}?`)) {
+                fetch(`/order/${orderId}/update_status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `status=${newStatus}`
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Failed to update order status');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while updating the order');
+                });
+            }
+        }
+
+        // Utility functions
+        function refreshData() {
+            location.reload();
+        }
+
+        function showNotifications() {
+            alert('Notifications feature coming soon!');
+        }
+
+        function showOrderMap(orderId) {
+            alert(`Opening map for order ${orderId}...`);
+        }
+
+        function callCustomer(phone) {
+            if (phone) {
+                window.open(`tel:${phone}`, '_self');
+            } else {
+                alert('Customer phone number not available');
+            }
+        }
+
+        function reportIssue(orderId) {
+            const issue = prompt('Please describe the issue:');
+            if (issue) {
+                alert(`Issue reported for order ${orderId}: ${issue}`);
+                // Implement actual issue reporting logic here
+            }
+        }
+
+        function exportData() {
+            alert('Export functionality coming soon!');
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            const lastActivity = localStorage.getItem('lastActivity');
+            const now = Date.now();
+            
+            // Only auto-refresh if user was active in the last 5 minutes
+            if (!lastActivity || (now - parseInt(lastActivity)) < 5 * 60 * 1000) {
+                location.reload();
+            }
+        }, 30000);
+
+        // Track user activity
+        document.addEventListener('click', () => {
+            localStorage.setItem('lastActivity', Date.now().toString());
+        });
+    </script>
+</body>
+</html>
