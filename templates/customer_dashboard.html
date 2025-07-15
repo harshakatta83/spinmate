@@ -5,86 +5,304 @@
 {% block content %}
 <div class="container mt-4">
     <!-- Welcome Section -->
+    <div class="dashboard-header fade-in">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">Welcome back, {{ current_user.name }}!</h1>
+                <p class="mb-0">Manage your laundry orders and track your washing journey</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="dashboard-avatar">
+                    <i class="fas fa-user-circle fa-4x text-white opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
     <div class="row mb-4">
-        <h1>Welcome to your Dashboard, {{ current_user.name }}!</h1>
+        <div class="col-md-12">
+            <div class="card glass-card">
+                <div class="card-body">
+                    <h5 class="card-title text-gradient mb-3">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <a href="{{ url_for('new_order') }}" class="btn btn-primary btn-lg w-100 mb-2">
+                                <i class="fas fa-plus-circle me-2"></i>Place New Order
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ url_for('order_tracking') }}" class="btn btn-outline-primary btn-lg w-100 mb-2">
+                                <i class="fas fa-search me-2"></i>Track Orders
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="#" class="btn btn-outline-primary btn-lg w-100 mb-2">
+                                <i class="fas fa-history me-2"></i>Order History
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <i class="fas fa-shopping-cart"></i>
+                <h3>{{ orders|length }}</h3>
+                <h6>Total Orders</h6>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <i class="fas fa-clock"></i>
+                <h3>{{ orders|selectattr('status', 'in', ['pending', 'picked', 'washing'])|list|length }}</h3>
+                <h6>Active Orders</h6>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <i class="fas fa-check-circle"></i>
+                <h3>{{ orders|selectattr('status', 'equalto', 'delivered')|list|length }}</h3>
+                <h6>Completed</h6>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <i class="fas fa-rupee-sign"></i>
+                <h3>₹{{ orders|sum(attribute='total_amount')|int }}</h3>
+                <h6>Total Spent</h6>
+            </div>
+        </div>
     </div>
 
     <!-- Recent Orders -->
-    <div class="row mb-4">
-        <h2>Recent Orders</h2>
-        {% if orders %}
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>Order Number</th>
-                        <th>Date</th>
-                        <th>Status</th>
-                        <th>Total Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for order in orders %}
-                        <tr>
-                            <td><a href="{{ url_for('order_tracking', order_id=order.id) }}">{{ order.order_number }}</a></td>
-                            <td>{{ order.created_at.strftime('%Y-%m-%d') }}</td>
-                            <td>{{ order.status }}</td>
-                            <td>₹{{ order.total_amount }}</td>
-                            <td>
-                                {% if order.status == 'Completed' and not order.feedback %}
-                                    <!-- Feedback Modal Trigger -->
-                                    <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#feedbackModal{{ order.id }}">Rate</button>
-                                    <!-- Feedback Modal -->
-                                    <div class="modal fade" id="feedbackModal{{ order.id }}" tabindex="-1">
-                                        <div class="modal-dialog">
-                                            <form method="POST" action="{{ url_for('submit_feedback', order_id=order.id) }}">
-                                                <div class="modal-content">
-                                                    <div class="modal-header"><h5>Rate Your Order</h5></div>
-                                                    <div class="modal-body">
-                                                        <input type="number" name="rating" min="0" max="5" step="0.1" required class="form-control" placeholder="Rating (0-5)">
-                                                        <textarea name="comment" class="form-control mt-2" placeholder="Comments"></textarea>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="submit" class="btn btn-primary">Submit</button>
-                                                    </div>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                    <!-- Complaint Modal Trigger -->
-                                    <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#complaintModal{{ order.id }}">Complain</button>
-                                    <!-- Complaint Modal -->
-                                    <div class="modal fade" id="complaintModal{{ order.id }}" tabindex="-1">
-                                        <div class="modal-dialog">
-                                            <form method="POST" action="{{ url_for('submit_complaint', order_id=order.id) }}">
-                                                <div class="modal-content">
-                                                    <div class="modal-header"><h5>Submit Complaint</h5></div>
-                                                    <div class="modal-body">
-                                                        <textarea name="description" class="form-control" required placeholder="Describe your issue"></textarea>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="submit" class="btn btn-danger">Submit</button>
-                                                    </div>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                {% elif order.feedback %}
-                                    Rated: {{ order.feedback.rating }}<br>
-                                    "{{ order.feedback.comment }}"
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <p>No recent orders.</p>
-        {% endif %}
-    </div>
-
-    <!-- Place New Order Button -->
     <div class="row">
-        <a href="{{ url_for('new_order') }}" class="btn btn-primary">Place New Order</a>
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Recent Orders
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if orders %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Order #</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Total Amount</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in orders %}
+                                        <tr>
+                                            <td>
+                                                <a href="{{ url_for('order_tracking', order_id=order.id) }}" class="text-decoration-none">
+                                                    <strong>{{ order.order_number }}</strong>
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fas fa-calendar-alt text-muted me-2"></i>
+                                                    {{ order.created_at.strftime('%Y-%m-%d') }}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{{ 'success' if order.status == 'delivered' else 'warning' if order.status == 'pending' else 'info' }}">
+                                                    {{ order.status.title() }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <strong class="text-success">₹{{ order.total_amount }}</strong>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a href="{{ url_for('order_tracking', order_id=order.id) }}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    {% if order.status == 'delivered' and not order.feedback %}
+                                                        <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#feedbackModal{{ order.id }}">
+                                                            <i class="fas fa-star"></i>
+                                                        </button>
+                                                        <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#complaintModal{{ order.id }}">
+                                                            <i class="fas fa-exclamation-triangle"></i>
+                                                        </button>
+                                                    {% endif %}
+                                                </div>
+                                                
+                                                {% if order.status == 'delivered' and not order.feedback %}
+                                                    <!-- Feedback Modal -->
+                                                    <div class="modal fade" id="feedbackModal{{ order.id }}" tabindex="-1">
+                                                        <div class="modal-dialog">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title">
+                                                                        <i class="fas fa-star me-2"></i>Rate Your Order
+                                                                    </h5>
+                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                                </div>
+                                                                <form method="POST" action="{{ url_for('submit_feedback', order_id=order.id) }}">
+                                                                    <div class="modal-body">
+                                                                        <div class="mb-3">
+                                                                            <label class="form-label">Rating (0-5)</label>
+                                                                            <input type="number" name="rating" min="0" max="5" step="0.1" required class="form-control" placeholder="Enter rating">
+                                                                        </div>
+                                                                        <div class="mb-3">
+                                                                            <label class="form-label">Comments</label>
+                                                                            <textarea name="comment" class="form-control" rows="3" placeholder="Share your experience..."></textarea>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                                        <button type="submit" class="btn btn-primary">Submit Rating</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Complaint Modal -->
+                                                    <div class="modal fade" id="complaintModal{{ order.id }}" tabindex="-1">
+                                                        <div class="modal-dialog">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title">
+                                                                        <i class="fas fa-exclamation-triangle me-2"></i>Submit Complaint
+                                                                    </h5>
+                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                                </div>
+                                                                <form method="POST" action="{{ url_for('submit_complaint', order_id=order.id) }}">
+                                                                    <div class="modal-body">
+                                                                        <div class="mb-3">
+                                                                            <label class="form-label">Issue Description</label>
+                                                                            <textarea name="description" class="form-control" rows="4" required placeholder="Describe your issue in detail..."></textarea>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                                        <button type="submit" class="btn btn-danger">Submit Complaint</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% elif order.feedback %}
+                                                    <div class="small text-muted">
+                                                        <i class="fas fa-star text-warning me-1"></i>
+                                                        Rated: {{ order.feedback.rating }}/5
+                                                    </div>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="empty-state">
+                                <i class="fas fa-shopping-cart fa-4x text-muted mb-3"></i>
+                                <h5 class="text-muted">No orders yet</h5>
+                                <p class="text-muted mb-4">Start your laundry journey with your first order!</p>
+                                <a href="{{ url_for('new_order') }}" class="btn btn-primary">
+                                    <i class="fas fa-plus me-2"></i>Place Your First Order
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<style>
+.dashboard-avatar {
+    position: relative;
+    text-align: center;
+}
+
+.dashboard-avatar::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+    border-radius: 50%;
+    z-index: -1;
+}
+
+.empty-state {
+    padding: 3rem;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 20px;
+    border: 2px dashed rgba(102, 126, 234, 0.3);
+}
+
+.empty-state i {
+    opacity: 0.3;
+}
+
+.modal-content {
+    border-radius: 16px;
+    border: none;
+    box-shadow: var(--shadow-xl);
+}
+
+.modal-header {
+    background: var(--primary-gradient);
+    color: white;
+    border-bottom: none;
+    border-radius: 16px 16px 0 0;
+}
+
+.modal-header .btn-close {
+    filter: brightness(0) invert(1);
+}
+
+.btn-group .btn {
+    border-radius: 8px;
+    margin-right: 4px;
+}
+
+.btn-group .btn:last-child {
+    margin-right: 0;
+}
+
+@media (max-width: 768px) {
+    .dashboard-header {
+        text-align: center;
+    }
+    
+    .dashboard-header .col-md-4 {
+        margin-top: 2rem;
+    }
+    
+    .stats-card {
+        margin-bottom: 1rem;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .btn-group .btn {
+        margin-right: 0;
+    }
+}
+</style>
 {% endblock %}

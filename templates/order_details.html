@@ -5,13 +5,16 @@
 {% block content %}
 <div class="container mt-4">
     <!-- Order Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <h2 class="text-primary mb-2">Add Items to Order {{ order.order_number }}</h2>
-                    <p class="text-muted mb-0">Add your laundry items and select appropriate services</p>
-                </div>
+    <div class="dashboard-header fade-in">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">Add Items to Order {{ order.order_number }}</h1>
+                <p class="mb-0">Build your perfect laundry order with our premium services</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <span class="badge bg-primary" style="font-size: 1.1rem; padding: 0.8rem 1.5rem;">
+                    Order Builder
+                </span>
             </div>
         </div>
     </div>
@@ -19,16 +22,20 @@
     <div class="row">
         <!-- Add Item Form -->
         <div class="col-md-8">
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="fas fa-plus me-2"></i>Add New Item</h5>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-plus-circle me-2"></i>Add New Item
+                    </h5>
                 </div>
                 <div class="card-body">
-                    <form method="POST">
-                        <div class="row">
+                    <form method="POST" class="slide-in-right">
+                        <div class="row mb-4">
                             <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Service Type *</label>
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-cog me-2"></i>Service Type *
+                                    </label>
                                     <select name="service_id" class="form-select" required onchange="updatePricing()">
                                         <option value="">Select Service</option>
                                         {% for service in services %}
@@ -43,32 +50,40 @@
                             </div>
                             
                             <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Item Name *</label>
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-tshirt me-2"></i>Item Name *
+                                    </label>
                                     <input type="text" name="item_name" class="form-control" placeholder="e.g., Shirt, Jeans, Dress" required>
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="row">
+                        <div class="row mb-4">
                             <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label">Quantity *</label>
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-sort-numeric-up me-2"></i>Quantity *
+                                    </label>
                                     <input type="number" name="quantity" class="form-control" min="1" value="1" required onchange="calculatePrice()">
                                 </div>
                             </div>
                             
                             <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label">Weight (kg)</label>
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-weight me-2"></i>Weight (kg)
+                                    </label>
                                     <input type="number" name="weight" class="form-control" step="0.1" min="0" placeholder="Optional" onchange="calculatePrice()">
                                     <small class="text-muted">Leave empty for item-based pricing</small>
                                 </div>
                             </div>
                             
                             <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label">Fabric Type</label>
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-cut me-2"></i>Fabric Type
+                                    </label>
                                     <select name="fabric_type" class="form-select">
                                         <option value="">Select Fabric</option>
                                         <option value="cotton">Cotton</option>
@@ -82,29 +97,41 @@
                             </div>
                         </div>
                         
-                        <div class="mb-3">
-                            <label class="form-label">Stain Notes</label>
-                            <textarea name="stain_notes" class="form-control" rows="2" placeholder="Describe any stains or special care instructions"></textarea>
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <i class="fas fa-sticky-note me-2"></i>Stain Notes
+                            </label>
+                            <textarea name="stain_notes" class="form-control" rows="3" placeholder="Describe any stains or special care instructions"></textarea>
                         </div>
                         
-                        <div class="mb-3">
+                        <div class="price-display mb-4">
                             <div class="alert alert-info">
-                                <strong>Estimated Price: ₹<span id="estimated-price">0.00</span></strong>
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-calculator fa-2x me-3"></i>
+                                    <div>
+                                        <h5 class="mb-1">Estimated Price</h5>
+                                        <h3 class="mb-0 text-primary">₹<span id="estimated-price">0.00</span></h3>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-plus me-2"></i>Add Item
-                        </button>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-plus me-2"></i>Add Item to Order
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
 
             <!-- Current Items -->
             {% if order_items %}
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white">
-                        <h5 class="mb-0">Items Added ({{ order_items|length }})</h5>
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>Items Added ({{ order_items|length }})
+                        </h5>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -123,18 +150,34 @@
                                     {% for item in order_items %}
                                         <tr>
                                             <td>
-                                                <strong>{{ item.item_name }}</strong>
-                                                {% if item.fabric_type %}
-                                                    <br><small class="text-muted">{{ item.fabric_type.title() }}</small>
-                                                {% endif %}
-                                                {% if item.stain_notes %}
-                                                    <br><small class="text-warning">Note: {{ item.stain_notes }}</small>
-                                                {% endif %}
+                                                <div class="item-info">
+                                                    <strong>{{ item.item_name }}</strong>
+                                                    {% if item.fabric_type %}
+                                                        <br><span class="badge bg-secondary">{{ item.fabric_type.title() }}</span>
+                                                    {% endif %}
+                                                    {% if item.stain_notes %}
+                                                        <br><small class="text-warning">
+                                                            <i class="fas fa-sticky-note me-1"></i>{{ item.stain_notes }}
+                                                        </small>
+                                                    {% endif %}
+                                                </div>
                                             </td>
-                                            <td>{{ item.service.name }}</td>
-                                            <td>{{ item.quantity }}</td>
-                                            <td>{{ "%.2f"|format(item.weight) }} kg</td>
-                                            <td>₹{{ "%.2f"|format(item.price) }}</td>
+                                            <td>
+                                                <span class="service-tag">{{ item.service.name }}</span>
+                                            </td>
+                                            <td>
+                                                <div class="quantity-badge">
+                                                    <i class="fas fa-times me-1"></i>{{ item.quantity }}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="weight-badge">
+                                                    <i class="fas fa-weight me-1"></i>{{ "%.2f"|format(item.weight) }} kg
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <strong class="text-success">₹{{ "%.2f"|format(item.price) }}</strong>
+                                            </td>
                                             <td>
                                                 <button class="btn btn-sm btn-outline-danger" onclick="removeItem({{ item.id }})">
                                                     <i class="fas fa-trash"></i>
@@ -150,40 +193,63 @@
             {% endif %}
         </div>
 
-        <!-- Order Summary -->
+        <!-- Order Summary Sidebar -->
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm mb-3">
-                <div class="card-header bg-white">
-                    <h6 class="mb-0">Order Summary</h6>
+            <div class="card glass-card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-receipt me-2"></i>Order Summary
+                    </h6>
                 </div>
                 <div class="card-body">
                     {% set total_items = order_items|sum(attribute='quantity') %}
                     {% set total_weight = order_items|sum(attribute='weight') %}
                     {% set subtotal = order_items|sum(attribute='price') %}
                     
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Total Items:</span>
-                        <span>{{ total_items }}</span>
+                    <div class="summary-stats">
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-list"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value">{{ total_items }}</div>
+                                <div class="stat-label">Total Items</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-weight"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value">{{ "%.2f"|format(total_weight) }} kg</div>
+                                <div class="stat-label">Total Weight</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-rupee-sign"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value">₹{{ "%.2f"|format(subtotal) }}</div>
+                                <div class="stat-label">Subtotal</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Total Weight:</span>
-                        <span>{{ "%.2f"|format(total_weight) }} kg</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Subtotal:</span>
-                        <span>₹{{ "%.2f"|format(subtotal) }}</span>
-                    </div>
-                    <hr>
-                    <div class="d-flex justify-content-between fw-bold">
-                        <span>Total:</span>
-                        <span>₹{{ "%.2f"|format(subtotal) }}</span>
+                    
+                    <div class="total-section">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fs-5 fw-bold">Total:</span>
+                            <span class="fs-4 fw-bold text-primary">₹{{ "%.2f"|format(subtotal) }}</span>
+                        </div>
                     </div>
                     
                     {% if order_items %}
                         <div class="d-grid mt-3">
                             <form method="POST" action="{{ url_for('finalize_order', order_id=order.id) }}">
                                 <button type="submit" class="btn btn-success btn-lg">
-                                    <i class="fas fa-check me-2"></i>Let’s Get Spinning 🚀
+                                    <i class="fas fa-rocket me-2"></i>Let's Get Spinning 🚀
                                 </button>
                             </form>
                         </div>
@@ -192,25 +258,37 @@
             </div>
 
             <!-- Service Guide -->
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-light">
-                    <h6 class="mb-0">Service Guide</h6>
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Service Guide
+                    </h6>
                 </div>
                 <div class="card-body">
                     <div class="accordion accordion-flush">
                         {% for service in services %}
-                            <div class="accordion-item border-0">
+                            <div class="accordion-item">
                                 <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed bg-transparent p-2" type="button" data-bs-toggle="collapse" data-bs-target="#service{{ service.id }}">
-                                        <small class="fw-bold">{{ service.name }}</small>
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#service{{ service.id }}">
+                                        <div class="service-info">
+                                            <strong>{{ service.name }}</strong>
+                                            <small class="text-muted d-block">Click to view details</small>
+                                        </div>
                                     </button>
                                 </h2>
                                 <div id="service{{ service.id }}" class="accordion-collapse collapse">
-                                    <div class="accordion-body p-2">
-                                        <p class="small mb-1">{{ service.description }}</p>
-                                        <small class="text-muted">
-                                            ₹{{ "%.0f"|format(service.price_per_kg) }}/kg or ₹{{ "%.0f"|format(service.price_per_item) }}/item
-                                        </small>
+                                    <div class="accordion-body">
+                                        <p class="mb-3">{{ service.description }}</p>
+                                        <div class="pricing-info">
+                                            <div class="d-flex justify-content-between">
+                                                <span>Per kg:</span>
+                                                <strong>₹{{ "%.0f"|format(service.price_per_kg) }}</strong>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Per item:</span>
+                                                <strong>₹{{ "%.0f"|format(service.price_per_item) }}</strong>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -262,4 +340,127 @@ function removeItem(itemId) {
     }
 }
 </script>
+
+<style>
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.price-display .alert {
+    border-radius: 16px;
+    border: 2px solid rgba(102, 126, 234, 0.2);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+}
+
+.item-info {
+    line-height: 1.5;
+}
+
+.service-tag {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.quantity-badge, .weight-badge {
+    background: rgba(102, 126, 234, 0.1);
+    color: var(--text-primary);
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+}
+
+.summary-stats {
+    margin-bottom: 1.5rem;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-radius: 12px;
+    background: rgba(102, 126, 234, 0.05);
+    margin-bottom: 1rem;
+}
+
+.stat-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin-right: 1rem;
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.total-section {
+    padding: 1.5rem;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+}
+
+.service-info {
+    flex: 1;
+}
+
+.pricing-info {
+    background: rgba(102, 126, 234, 0.05);
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+}
+
+.accordion-button {
+    border-radius: 12px;
+    border: none;
+    background: rgba(102, 126, 234, 0.05);
+    margin-bottom: 0.5rem;
+}
+
+.accordion-button:not(.collapsed) {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+.accordion-item {
+    border: none;
+}
+
+@media (max-width: 768px) {
+    .stat-item {
+        text-align: center;
+        flex-direction: column;
+    }
+    
+    .stat-icon {
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+    }
+    
+    .col-md-4 {
+        margin-bottom: 1rem;
+    }
+}
+</style>
 {% endblock %}

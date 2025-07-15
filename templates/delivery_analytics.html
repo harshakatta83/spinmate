@@ -4,142 +4,314 @@
 
 {% block content %}
 <div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0">📈 Advanced Delivery Analytics</h2>
-    <span class="badge bg-gradient-warning">{{ current_user.role|capitalize }}</span>
-  </div>
+    <!-- Header -->
+    <div class="dashboard-header fade-in">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">📈 Delivery Analytics</h1>
+                <p class="mb-0">Advanced insights for {{ current_user.name }}</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <span class="badge bg-warning" style="font-size: 1.1rem; padding: 0.8rem 1.5rem;">
+                    {{ current_user.role|capitalize }}
+                </span>
+            </div>
+        </div>
+    </div>
 
-  <!-- Section 1: KPI Summary Cards -->
-  <div class="row g-4 mb-4">
-    {% set cards = [
-  ("Total Assigned", total_assigned, "fas fa-tasks", "info"),
-  ("Total Delivered", total_delivered, "fas fa-check-circle", "success"),
-  ("Today's Deliveries", deliveries_today, "fas fa-calendar-day", "primary"),
-  ("Pending", pending, "fas fa-truck-loading", "warning"),
-  ("Avg Delivery Time (min)", avg_delivery_time, "fas fa-clock", "secondary"),
-  ("Completion Rate", completion_rate ~ '%', "fas fa-percent", "success")
-] %}
+    <!-- KPI Summary Cards -->
+    <div class="row mb-4">
+        {% set cards = [
+            ("Total Assigned", total_assigned, "fas fa-tasks", "primary"),
+            ("Total Delivered", total_delivered, "fas fa-check-circle", "success"),
+            ("Today's Deliveries", deliveries_today, "fas fa-calendar-day", "info"),
+            ("Pending Orders", pending, "fas fa-truck-loading", "warning"),
+            ("Avg Delivery Time", avg_delivery_time ~ ' min', "fas fa-clock", "secondary"),
+            ("Completion Rate", completion_rate ~ '%', "fas fa-percent", "success")
+        ] %}
 
-    {% for label, value, icon, color in cards %}
-    <div class="col-md-4">
-      <div class="card shadow-sm border-0 text-center bg-light">
-        <div class="card-body">
-          <i class="{{ icon }} text-{{ color }} fa-2x mb-2"></i>
-          <h6 class="text-muted">{{ label }}</h6>
-          <h4 class="text-dark fw-bold">{{ value }}</h4>
+        {% for label, value, icon, color in cards %}
+        <div class="col-md-4 col-lg-2 mb-3">
+            <div class="stats-card">
+                <i class="{{ icon }}"></i>
+                <h3>{{ value }}</h3>
+                <h6>{{ label }}</h6>
+            </div>
         </div>
-      </div>
-    </div>
-    {% endfor %}
-  </div>
-
-  <!-- Section 2: Trend Charts -->
-  <div class="row g-4 mb-4">
-    <div class="col-md-6">
-      <div class="card">
-        <div class="card-header"><strong>📊 Daily Delivery Trend</strong></div>
-        <div class="card-body">
-          <canvas id="dailyChart"></canvas>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-6">
-      <div class="card">
-        <div class="card-header"><strong>⏰ Peak Hour Activity</strong></div>
-        <div class="card-body">
-          <canvas id="hourlyChart"></canvas>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Section 3: Performance Metrics -->
-  <div class="row g-4 mb-4">
-    <div class="col-md-4">
-      <div class="card text-center shadow-sm">
-        <div class="card-body">
-          <h6>🔄 Rescheduled Deliveries</h6>
-          <h4>{{ rescheduled_count }}</h4>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="card text-center shadow-sm">
-        <div class="card-body">
-          <h6>✅ First Attempt Success</h6>
-          <h4>{{ first_attempt_success_rate }}%</h4>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="card text-center shadow-sm">
-        <div class="card-body">
-          <h6>⚠️ Complaint Count</h6>
-          <h4>{{ complaint_count }}</h4>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Section 4: Recent Feedback -->
-  <div class="card mb-5">
-    <div class="card-header">
-      <strong>💬 Latest Feedback</strong>
-    </div>
-    <div class="card-body">
-      {% if recent_feedbacks %}
-      <ul class="list-group">
-        {% for fb in recent_feedbacks %}
-        <li class="list-group-item">
-          <strong>{{ fb.customer.name }}</strong>: {{ fb.message }}
-        </li>
         {% endfor %}
-      </ul>
-      {% else %}
-      <p class="text-muted">No feedback received yet.</p>
-      {% endif %}
     </div>
-  </div>
+
+    <!-- Charts Section -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Daily Delivery Trend
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="dailyChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Peak Hour Activity
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="hourlyChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card glass-card">
+                <div class="card-body text-center">
+                    <div class="metric-icon mb-3">
+                        <i class="fas fa-redo-alt fa-2x text-warning"></i>
+                    </div>
+                    <h6 class="text-muted mb-2">Rescheduled Deliveries</h6>
+                    <h4 class="text-gradient fw-bold">{{ rescheduled_count }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card glass-card">
+                <div class="card-body text-center">
+                    <div class="metric-icon mb-3">
+                        <i class="fas fa-bullseye fa-2x text-success"></i>
+                    </div>
+                    <h6 class="text-muted mb-2">First Attempt Success</h6>
+                    <h4 class="text-gradient fw-bold">{{ first_attempt_success_rate }}%</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card glass-card">
+                <div class="card-body text-center">
+                    <div class="metric-icon mb-3">
+                        <i class="fas fa-exclamation-triangle fa-2x text-danger"></i>
+                    </div>
+                    <h6 class="text-muted mb-2">Complaint Count</h6>
+                    <h4 class="text-gradient fw-bold">{{ complaint_count }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Feedback -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-comments me-2"></i>Latest Customer Feedback
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_feedbacks %}
+                        <div class="row">
+                            {% for fb in recent_feedbacks %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="feedback-card">
+                                        <div class="feedback-header">
+                                            <div class="d-flex align-items-center">
+                                                <div class="feedback-avatar">
+                                                    <i class="fas fa-user-circle fa-2x text-primary"></i>
+                                                </div>
+                                                <div class="ms-3">
+                                                    <h6 class="mb-1">{{ fb.customer.name }}</h6>
+                                                    <small class="text-muted">Customer Feedback</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="feedback-content">
+                                            <p class="mb-0">{{ fb.message }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-comments fa-4x text-muted opacity-50 mb-3"></i>
+                            <h5 class="text-muted">No feedback received yet</h5>
+                            <p class="text-muted">Customer feedback will appear here once available</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Charts JS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  const dailyCtx = document.getElementById('dailyChart').getContext('2d');
-  const hourlyCtx = document.getElementById('hourlyChart').getContext('2d');
+    // Enhanced Chart Configuration
+    const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+    const hourlyCtx = document.getElementById('hourlyChart').getContext('2d');
 
-  new Chart(dailyCtx, {
-    type: 'line',
-    data: {
-      labels: {{ daily_trends | map(attribute=0) | map('string') | list | tojson }},
-      datasets: [{
-        label: 'Deliveries',
-        data: {{ daily_trends | map(attribute=1) | list | tojson }},
-        backgroundColor: 'rgba(139,154,107,0.2)',
-        borderColor: '#8b9a6b',
-        borderWidth: 2,
-        fill: true,
-        tension: 0.3
-      }]
-    }
-  });
+    // Daily Trend Chart
+    new Chart(dailyCtx, {
+        type: 'line',
+        data: {
+            labels: {{ daily_trends | map(attribute=0) | map('string') | list | tojson }},
+            datasets: [{
+                label: 'Deliveries',
+                data: {{ daily_trends | map(attribute=1) | list | tojson }},
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                borderColor: '#667eea',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#667eea',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
 
-  new Chart(hourlyCtx, {
-    type: 'bar',
-    data: {
-      labels: {{ hourly_trends | map(attribute=0) | list | tojson }},
-      datasets: [{
-        label: 'Deliveries',
-        data: {{ hourly_trends | map(attribute=1) | list | tojson }},
-        backgroundColor: '#a8b887'
-      }]
-    }
-  });
+    // Hourly Activity Chart
+    new Chart(hourlyCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ hourly_trends | map(attribute=0) | list | tojson }},
+            datasets: [{
+                label: 'Deliveries',
+                data: {{ hourly_trends | map(attribute=1) | list | tojson }},
+                backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                borderColor: '#667eea',
+                borderWidth: 2,
+                borderRadius: 8,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
 </script>
+
 <style>
-  #dailyChart, #hourlyChart {
-    min-height: 260px;
-    max-height: 300px;
-  }
+#dailyChart, #hourlyChart {
+    height: 300px !important;
+}
+
+.metric-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(102, 126, 234, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.feedback-card {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    transition: all var(--transition-medium);
+    height: 100%;
+}
+
+.feedback-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.feedback-header {
+    margin-bottom: 1rem;
+}
+
+.feedback-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(102, 126, 234, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.feedback-content {
+    padding: 1rem;
+    background: rgba(102, 126, 234, 0.05);
+    border-radius: 12px;
+    border-left: 4px solid #667eea;
+}
+
+@media (max-width: 768px) {
+    .stats-card {
+        margin-bottom: 1rem;
+    }
+    
+    .metric-icon {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .metric-icon i {
+        font-size: 1.5rem;
+    }
+    
+    .feedback-card {
+        padding: 1rem;
+    }
+}
 </style>
 {% endblock %}

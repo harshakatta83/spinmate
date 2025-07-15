@@ -4,122 +4,224 @@
 
 {% block content %}
 <div class="container mt-4">
+    <!-- Header -->
+    <div class="dashboard-header fade-in">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">Create New Order</h1>
+                <p class="mb-0">Let's start your laundry journey with SpinMate</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <span class="badge bg-success" style="font-size: 1.1rem; padding: 0.8rem 1.5rem;">
+                    Order Form
+                </span>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-md-8">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0"><i class="fas fa-plus me-2"></i>Place New Order</h4>
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-plus-circle me-2"></i>Place New Order
+                    </h5>
                 </div>
                 <div class="card-body">
-                    <form method="POST" id="orderForm">
+                    <form method="POST" id="orderForm" class="slide-in-right">
                         {{ pincode_form.hidden_tag() }}
                         {{ order_form.hidden_tag() }}
 
-                        <!-- Step 1: Pincode Details -->
-                        <div class="mb-4">
-                            <h5 class="text-primary mb-3">Enter Pincode</h5>
-                            <div class="mb-3">
-                                {{ pincode_form.pincode.label(class="form-label") }}
-                                {{ pincode_form.pincode(class="form-control", placeholder="Enter your pincode", id="pincode_input") }}
-                                {% if pincode_form.pincode.errors %}
-                                    <div class="text-danger mt-1">
-                                        {% for error in pincode_form.pincode.errors %}
-                                            <small>{{ error }}</small>
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <button type="button" class="btn btn-outline-primary" id="validatePincodeBtn">Validate Pincode</button>
-                            <div id="pincodeStatus" class="mt-2"></div>
-                        </div>
-
-                        <!-- Step 2: Other Details (Hidden Initially) -->
-                        <div id="orderDetails" style="display: none;">
-                            <!-- Pickup Details -->
-                            <div class="mb-4">
-                                <h5 class="text-primary mb-3">Pickup Details</h5>
-                                <div class="mb-3">
-                                    {{ order_form.pickup_address.label(class="form-label") }}
-                                    {{ order_form.pickup_address(class="form-control", rows="3", placeholder="Enter complete pickup address", id="pickup_address") }}
-                                    {% if order_form.pickup_address.errors %}
-                                        <div class="text-danger mt-1">
-                                            {% for error in order_form.pickup_address.errors %}
-                                                <small>{{ error }}</small>
-                                            {% endfor %}
-                                        </div>
-                                    {% endif %}
+                        <!-- Step 1: Pincode Verification -->
+                        <div class="step-section mb-4">
+                            <div class="step-header">
+                                <div class="step-number">1</div>
+                                <div class="step-info">
+                                    <h5 class="mb-1">Verify Service Area</h5>
+                                    <p class="text-muted mb-0">Check if we deliver to your location</p>
                                 </div>
+                            </div>
+                            
+                            <div class="step-content">
                                 <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            {{ order_form.pickup_date.label(class="form-label") }}
-                                            {{ order_form.pickup_date(class="form-control") }}
-                                            {% if order_form.pickup_date.errors %}
-                                                <div class="text-danger mt-1">
-                                                    {% for error in order_form.pickup_date.errors %}
-                                                        <small>{{ error }}</small>
+                                    <div class="col-md-8">
+                                        <div class="form-group">
+                                            {{ pincode_form.pincode.label(class="form-label") }}
+                                            <div class="input-group">
+                                                <span class="input-group-text">
+                                                    <i class="fas fa-map-pin"></i>
+                                                </span>
+                                                {{ pincode_form.pincode(class="form-control", placeholder="Enter your 6-digit pincode", id="pincode_input") }}
+                                            </div>
+                                            {% if pincode_form.pincode.errors %}
+                                                <div class="text-danger mt-2">
+                                                    {% for error in pincode_form.pincode.errors %}
+                                                        <small><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</small>
                                                     {% endfor %}
                                                 </div>
                                             {% endif %}
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            {{ order_form.pickup_time.label(class="form-label") }}
-                                            {{ order_form.pickup_time(class="form-control") }}
-                                            {% if order_form.pickup_time.errors %}
-                                                <div class="text-danger mt-1">
-                                                    {% for error in order_form.pickup_time.errors %}
-                                                        <small>{{ error }}</small>
-                                                    {% endfor %}
-                                                </div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Delivery Details -->
-                            <div class="mb-4">
-                                <h5 class="text-primary mb-3">Delivery Details</h5>
-                                <div class="mb-3">
-                                    {{ order_form.delivery_address.label(class="form-label") }}
-                                    {{ order_form.delivery_address(class="form-control", rows="3", placeholder="Enter complete delivery address (can be same as pickup)", id="delivery_address") }}
-                                    {% if order_form.delivery_address.errors %}
-                                        <div class="text-danger mt-1">
-                                            {% for error in order_form.delivery_address.errors %}
-                                                <small>{{ error }}</small>
-                                            {% endfor %}
-                                        </div>
-                                    {% endif %}
-                                    <div class="form-text">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="copyPickupAddress()">
-                                            <i class="fas fa-copy me-1"></i>Same as pickup address
+                                    <div class="col-md-4">
+                                        <label class="form-label">&nbsp;</label>
+                                        <button type="button" class="btn btn-outline-primary d-block w-100" id="validatePincodeBtn">
+                                            <i class="fas fa-check-circle me-2"></i>Validate Pincode
                                         </button>
                                     </div>
                                 </div>
+                                <div id="pincodeStatus" class="mt-3"></div>
                             </div>
-                            <!-- Special Instructions -->
-                            <div class="mb-4">
-                                <h5 class="text-primary mb-3">Additional Options</h5>
-                                <div class="mb-3">
-                                    {{ order_form.special_instructions.label(class="form-label") }}
-                                    {{ order_form.special_instructions(class="form-control", rows="3", placeholder="Any special instructions for handling your clothes") }}
-                                    {% if order_form.special_instructions.errors %}
-                                        <div class="text-danger mt-1">
-                                            {% for error in order_form.special_instructions.errors %}
-                                                <small>{{ error }}</small>
-                                            {% endfor %}
+                        </div>
+
+                        <!-- Step 2: Order Details (Hidden Initially) -->
+                        <div id="orderDetails" style="display: none;">
+                            <!-- Pickup Details -->
+                            <div class="step-section mb-4">
+                                <div class="step-header">
+                                    <div class="step-number">2</div>
+                                    <div class="step-info">
+                                        <h5 class="mb-1">Pickup Information</h5>
+                                        <p class="text-muted mb-0">When and where should we collect your items?</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="step-content">
+                                    <div class="form-group">
+                                        {{ order_form.pickup_address.label(class="form-label") }}
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                            </span>
+                                            {{ order_form.pickup_address(class="form-control", rows="3", placeholder="Enter complete pickup address with landmark", id="pickup_address") }}
                                         </div>
-                                    {% endif %}
-                                </div>
-                                <div class="form-check">
-                                    {{ order_form.eco_wash(class="form-check-input") }}
-                                    {{ order_form.eco_wash.label(class="form-check-label") }}
-                                    <small class="text-muted d-block">Choose eco-friendly washing for environmental protection</small>
+                                        {% if order_form.pickup_address.errors %}
+                                            <div class="text-danger mt-2">
+                                                {% for error in order_form.pickup_address.errors %}
+                                                    <small><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</small>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                {{ order_form.pickup_date.label(class="form-label") }}
+                                                <div class="input-group">
+                                                    <span class="input-group-text">
+                                                        <i class="fas fa-calendar"></i>
+                                                    </span>
+                                                    {{ order_form.pickup_date(class="form-control") }}
+                                                </div>
+                                                {% if order_form.pickup_date.errors %}
+                                                    <div class="text-danger mt-2">
+                                                        {% for error in order_form.pickup_date.errors %}
+                                                            <small><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</small>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                {{ order_form.pickup_time.label(class="form-label") }}
+                                                <div class="input-group">
+                                                    <span class="input-group-text">
+                                                        <i class="fas fa-clock"></i>
+                                                    </span>
+                                                    {{ order_form.pickup_time(class="form-control") }}
+                                                </div>
+                                                {% if order_form.pickup_time.errors %}
+                                                    <div class="text-danger mt-2">
+                                                        {% for error in order_form.pickup_time.errors %}
+                                                            <small><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</small>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+
+                            <!-- Delivery Details -->
+                            <div class="step-section mb-4">
+                                <div class="step-header">
+                                    <div class="step-number">3</div>
+                                    <div class="step-info">
+                                        <h5 class="mb-1">Delivery Information</h5>
+                                        <p class="text-muted mb-0">Where should we deliver your clean clothes?</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="step-content">
+                                    <div class="form-group">
+                                        {{ order_form.delivery_address.label(class="form-label") }}
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="fas fa-home"></i>
+                                            </span>
+                                            {{ order_form.delivery_address(class="form-control", rows="3", placeholder="Enter complete delivery address", id="delivery_address") }}
+                                        </div>
+                                        {% if order_form.delivery_address.errors %}
+                                            <div class="text-danger mt-2">
+                                                {% for error in order_form.delivery_address.errors %}
+                                                    <small><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</small>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                        <div class="mt-2">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="copyPickupAddress()">
+                                                <i class="fas fa-copy me-1"></i>Same as pickup address
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Special Instructions -->
+                            <div class="step-section mb-4">
+                                <div class="step-header">
+                                    <div class="step-number">4</div>
+                                    <div class="step-info">
+                                        <h5 class="mb-1">Special Preferences</h5>
+                                        <p class="text-muted mb-0">Any specific requirements or preferences?</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="step-content">
+                                    <div class="form-group">
+                                        {{ order_form.special_instructions.label(class="form-label") }}
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="fas fa-sticky-note"></i>
+                                            </span>
+                                            {{ order_form.special_instructions(class="form-control", rows="3", placeholder="Any special instructions for handling your clothes") }}
+                                        </div>
+                                        {% if order_form.special_instructions.errors %}
+                                            <div class="text-danger mt-2">
+                                                {% for error in order_form.special_instructions.errors %}
+                                                    <small><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</small>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="eco-option">
+                                        <div class="form-check">
+                                            {{ order_form.eco_wash(class="form-check-input") }}
+                                            <label class="form-check-label" for="{{ order_form.eco_wash.id }}">
+                                                <i class="fas fa-leaf text-success me-2"></i>
+                                                <strong>{{ order_form.eco_wash.label.text }}</strong>
+                                            </label>
+                                        </div>
+                                        <small class="text-muted ms-4">Choose eco-friendly washing to protect the environment</small>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="d-grid">
-                                {{ order_form.submit(class="btn btn-primary btn-lg") }}
+                                {{ order_form.submit(class="btn btn-success btn-lg") }}
                             </div>
                         </div>
                     </form>
@@ -127,59 +229,71 @@
             </div>
         </div>
         
-        <!-- Order Summary Sidebar (unchanged) -->
+        <!-- Sidebar -->
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">Service Options</h5>
+            <div class="card glass-card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-star me-2"></i>Our Services
+                    </h6>
                 </div>
                 <div class="card-body">
                     <p class="text-muted mb-3">Available services and pricing:</p>
                     {% for service in services %}
-                        <div class="border rounded p-3 mb-3">
-                            <h6 class="text-primary mb-1">{{ service.name }}</h6>
-                            <p class="text-muted small mb-2">{{ service.description }}</p>
-                            <div class="d-flex justify-content-between">
-                                {% if service.price_per_kg is not none %}
-                                    <small><strong>₹{{ "%.0f"|format(service.price_per_kg) }}/kg</strong></small>
-                                {% elif service.price_per_item is not none %}
-                                    <small><strong>₹{{ "%.0f"|format(service.price_per_item) }}/item</strong></small>
-                                {% else %}
-                                    <small><strong>Price not set</strong></small>
-                                {% endif %}
+                        <div class="service-card mb-3">
+                            <div class="service-header">
+                                <h6 class="text-primary mb-1">{{ service.name }}</h6>
+                                <div class="service-pricing">
+                                    {% if service.price_per_kg is not none %}
+                                        <span class="price-tag">₹{{ "%.0f"|format(service.price_per_kg) }}/kg</span>
+                                    {% endif %}
+                                    {% if service.price_per_item is not none %}
+                                        <span class="price-tag">₹{{ "%.0f"|format(service.price_per_item) }}/item</span>
+                                    {% endif %}
+                                </div>
                             </div>
+                            <p class="text-muted small mb-0">{{ service.description }}</p>
                         </div>
                     {% endfor %}
                     <div class="alert alert-info">
                         <small>
                             <i class="fas fa-info-circle me-1"></i>
-                            You'll add specific items and select services in the next step.
+                            You'll select specific services and add items in the next step.
                         </small>
                     </div>
                 </div>
             </div>
+            
             <!-- Benefits -->
-            <div class="card border-0 shadow-sm mt-3">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0 text-success">
+                        <i class="fas fa-check-circle me-2"></i>Why Choose SpinMate?
+                    </h6>
+                </div>
                 <div class="card-body">
-                    <h6 class="text-success mb-3">Why Choose SpinMate?</h6>
-                    <ul class="list-unstyled">
-                        <li class="mb-2">
-                            <i class="fas fa-check text-success me-2"></i>
-                            <small>Free pickup & delivery</small>
-                        </li>
-                        <li class="mb-2">
-                            <i class="fas fa-check text-success me-2"></i>
-                            <small>Real-time order tracking</small>
-                        </li>
-                        <li class="mb-2">
-                            <i class="fas fa-check text-success me-2"></i>
-                            <small>Quality guarantee</small>
-                        </li>
-                        <li class="mb-2">
-                            <i class="fas fa-check text-success me-2"></i>
-                            <small>Eco-friendly options</small>
-                        </li>
-                    </ul>
+                    <div class="benefit-list">
+                        <div class="benefit-item">
+                            <i class="fas fa-truck text-primary"></i>
+                            <span>Free pickup & delivery</span>
+                        </div>
+                        <div class="benefit-item">
+                            <i class="fas fa-mobile-alt text-success"></i>
+                            <span>Real-time order tracking</span>
+                        </div>
+                        <div class="benefit-item">
+                            <i class="fas fa-shield-alt text-info"></i>
+                            <span>100% quality guarantee</span>
+                        </div>
+                        <div class="benefit-item">
+                            <i class="fas fa-leaf text-success"></i>
+                            <span>Eco-friendly options</span>
+                        </div>
+                        <div class="benefit-item">
+                            <i class="fas fa-clock text-warning"></i>
+                            <span>24/7 customer support</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -192,22 +306,184 @@ function copyPickupAddress() {
     document.getElementById('delivery_address').value = pickupAddress;
 }
 
-// Simple pincode validation (you can replace with AJAX for server-side check)
+// Enhanced pincode validation
 document.getElementById('validatePincodeBtn').addEventListener('click', function() {
     const pincode = document.getElementById('pincode_input').value;
     const statusDiv = document.getElementById('pincodeStatus');
+    const orderDetails = document.getElementById('orderDetails');
+    
     // Basic Indian pincode validation (6 digits)
     const regex = /^[1-9][0-9]{5}$/;
+    
     if (regex.test(pincode)) {
-        statusDiv.innerHTML = '<span class="text-success">Pincode is valid!</span>';
-        document.getElementById('orderDetails').style.display = 'block';
-        // Optionally disable pincode input to prevent editing
+        statusDiv.innerHTML = `
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>Great!</strong> We deliver to pincode ${pincode}. You can proceed with your order.
+            </div>
+        `;
+        orderDetails.style.display = 'block';
         document.getElementById('pincode_input').readOnly = true;
         this.disabled = true;
+        this.innerHTML = '<i class="fas fa-check me-2"></i>Verified';
+        this.classList.remove('btn-outline-primary');
+        this.classList.add('btn-success');
     } else {
-        statusDiv.innerHTML = '<span class="text-danger">Invalid pincode. Please enter a valid 6-digit pincode.</span>';
-        document.getElementById('orderDetails').style.display = 'none';
+        statusDiv.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-times-circle me-2"></i>
+                <strong>Invalid pincode.</strong> Please enter a valid 6-digit pincode.
+            </div>
+        `;
+        orderDetails.style.display = 'none';
     }
 });
+
+// Auto-format pincode input
+document.getElementById('pincode_input').addEventListener('input', function(e) {
+    this.value = this.value.replace(/\D/g, '').slice(0, 6);
+});
 </script>
+
+<style>
+.step-section {
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    border-radius: 16px;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+.step-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary-gradient);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin-right: 1rem;
+}
+
+.step-info h5 {
+    margin-bottom: 0.25rem;
+    color: var(--text-primary);
+}
+
+.step-content {
+    margin-left: 56px;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.input-group-text {
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    border-radius: 12px 0 0 12px;
+}
+
+.input-group .form-control {
+    border-radius: 0 12px 12px 0;
+}
+
+.service-card {
+    padding: 1rem;
+    border-radius: 12px;
+    background: rgba(102, 126, 234, 0.05);
+    border: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.service-header {
+    display: flex;
+    justify-content: between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+.service-pricing {
+    margin-left: auto;
+}
+
+.price-tag {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 0.25rem;
+}
+
+.eco-option {
+    background: rgba(67, 233, 123, 0.1);
+    border: 1px solid rgba(67, 233, 123, 0.2);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.benefit-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.benefit-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: all var(--transition-medium);
+}
+
+.benefit-item:hover {
+    background: rgba(102, 126, 234, 0.05);
+    transform: translateX(5px);
+}
+
+.benefit-item i {
+    width: 20px;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .step-content {
+        margin-left: 0;
+        margin-top: 1rem;
+    }
+    
+    .step-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .step-number {
+        margin-right: 0;
+        margin-bottom: 1rem;
+    }
+    
+    .service-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .service-pricing {
+        margin-left: 0;
+        margin-top: 0.5rem;
+    }
+}
+</style>
 {% endblock %}
