@@ -1,0 +1,145 @@
+<!-- delivery_analytics.html - Advanced Analytics Layout -->
+{% extends "base.html" %}
+{% block title %}Delivery Analytics - SpinMate{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">📈 Advanced Delivery Analytics</h2>
+    <span class="badge bg-gradient-warning">{{ current_user.role|capitalize }}</span>
+  </div>
+
+  <!-- Section 1: KPI Summary Cards -->
+  <div class="row g-4 mb-4">
+    {% set cards = [
+  ("Total Assigned", total_assigned, "fas fa-tasks", "info"),
+  ("Total Delivered", total_delivered, "fas fa-check-circle", "success"),
+  ("Today's Deliveries", deliveries_today, "fas fa-calendar-day", "primary"),
+  ("Pending", pending, "fas fa-truck-loading", "warning"),
+  ("Avg Delivery Time (min)", avg_delivery_time, "fas fa-clock", "secondary"),
+  ("Completion Rate", completion_rate ~ '%', "fas fa-percent", "success")
+] %}
+
+    {% for label, value, icon, color in cards %}
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0 text-center bg-light">
+        <div class="card-body">
+          <i class="{{ icon }} text-{{ color }} fa-2x mb-2"></i>
+          <h6 class="text-muted">{{ label }}</h6>
+          <h4 class="text-dark fw-bold">{{ value }}</h4>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Section 2: Trend Charts -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header"><strong>📊 Daily Delivery Trend</strong></div>
+        <div class="card-body">
+          <canvas id="dailyChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header"><strong>⏰ Peak Hour Activity</strong></div>
+        <div class="card-body">
+          <canvas id="hourlyChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 3: Performance Metrics -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-4">
+      <div class="card text-center shadow-sm">
+        <div class="card-body">
+          <h6>🔄 Rescheduled Deliveries</h6>
+          <h4>{{ rescheduled_count }}</h4>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-center shadow-sm">
+        <div class="card-body">
+          <h6>✅ First Attempt Success</h6>
+          <h4>{{ first_attempt_success_rate }}%</h4>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-center shadow-sm">
+        <div class="card-body">
+          <h6>⚠️ Complaint Count</h6>
+          <h4>{{ complaint_count }}</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 4: Recent Feedback -->
+  <div class="card mb-5">
+    <div class="card-header">
+      <strong>💬 Latest Feedback</strong>
+    </div>
+    <div class="card-body">
+      {% if recent_feedbacks %}
+      <ul class="list-group">
+        {% for fb in recent_feedbacks %}
+        <li class="list-group-item">
+          <strong>{{ fb.customer.name }}</strong>: {{ fb.message }}
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-muted">No feedback received yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Charts JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+  const hourlyCtx = document.getElementById('hourlyChart').getContext('2d');
+
+  new Chart(dailyCtx, {
+    type: 'line',
+    data: {
+      labels: {{ daily_trends | map(attribute=0) | map('string') | list | tojson }},
+      datasets: [{
+        label: 'Deliveries',
+        data: {{ daily_trends | map(attribute=1) | list | tojson }},
+        backgroundColor: 'rgba(139,154,107,0.2)',
+        borderColor: '#8b9a6b',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.3
+      }]
+    }
+  });
+
+  new Chart(hourlyCtx, {
+    type: 'bar',
+    data: {
+      labels: {{ hourly_trends | map(attribute=0) | list | tojson }},
+      datasets: [{
+        label: 'Deliveries',
+        data: {{ hourly_trends | map(attribute=1) | list | tojson }},
+        backgroundColor: '#a8b887'
+      }]
+    }
+  });
+</script>
+<style>
+  #dailyChart, #hourlyChart {
+    min-height: 260px;
+    max-height: 300px;
+  }
+</style>
+{% endblock %}

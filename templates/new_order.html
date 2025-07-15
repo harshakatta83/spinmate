@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Place New Order - SpinMate{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">🧺 Place New Order</h2>
+
+    <form method="POST" action="{{ url_for('new_order') }}">
+        {{ form.csrf_token }}
+
+        <!-- Pickup and Delivery Details -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                {{ form.pickup_address.label(class="form-label") }}
+                {{ form.pickup_address(class="form-control", required=True) }}
+            </div>
+            <div class="col-md-6">
+                {{ form.delivery_address.label(class="form-label") }}
+                {{ form.delivery_address(class="form-control", required=True) }}
+            </div>
+        </div>
+        <div class="row mb-4">
+            <div class="col-md-3">
+                {{ form.pickup_date.label(class="form-label") }}
+                {{ form.pickup_date(class="form-control", required=True) }}
+            </div>
+            <div class="col-md-3">
+                {{ form.pickup_time.label(class="form-label") }}
+                {{ form.pickup_time(class="form-control", required=True) }}
+            </div>
+            <div class="col-md-6">
+                {{ form.special_instructions.label(class="form-label") }}
+                {{ form.special_instructions(class="form-control") }}
+            </div>
+        </div>
+        <div class="mb-3">
+            <div class="form-check">
+                {{ form.eco_wash(class="form-check-input") }}
+                {{ form.eco_wash.label(class="form-check-label") }}
+            </div>
+        </div>
+
+        <div class="text-end">
+            <button type="submit" class="btn btn-success">🚚 Submit Order</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

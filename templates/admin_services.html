@@ -1,0 +1,191 @@
+{% extends "admin_layout.html" %}
+
+{% block page_title %}Service Management{% endblock %}
+
+{% block content %}
+<!-- Services Overview Cards -->
+<div class="row g-4 mb-5">
+    <div class="col-md-6 col-lg-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <p class="stats-label">Total Services</p>
+                    <h3 class="stats-number">{{ services|length }}</h3>
+                </div>
+                <div class="stats-icon" style="background-color: rgba(139, 154, 107, 0.1);">
+                    <i class="fas fa-cogs" style="color: #8b9a6b;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <p class="stats-label">Active Services</p>
+                    <h3 class="stats-number">{{ services|selectattr('is_active')|list|length }}</h3>
+                </div>
+                <div class="stats-icon" style="background-color: rgba(34, 197, 94, 0.1);">
+                    <i class="fas fa-check-circle" style="color: #22c55e;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <p class="stats-label">Service Categories</p>
+                    <h3 class="stats-number">{{ services|map(attribute='category')|unique|list|length }}</h3>
+                </div>
+                <div class="stats-icon" style="background-color: rgba(59, 130, 246, 0.1);">
+                    <i class="fas fa-layer-group" style="color: #3b82f6;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <p class="stats-label">Serviceable Areas</p>
+                    <h3 class="stats-number">{{ pincodes|selectattr('is_serviceable')|list|length }}</h3>
+                </div>
+                <div class="stats-icon" style="background-color: rgba(245, 158, 11, 0.1);">
+                    <i class="fas fa-map-marker-alt" style="color: #f59e0b;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Service Management Table -->
+<form method="POST" action="{{ url_for('admin_services') }}">
+    <table class="table table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th>Service</th>
+                <th>Price per Item (₹)</th>
+                <th>Price per KG (₹)</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for service in services %}
+            <tr>
+                <td>{{ service.name }}</td>
+                <td>
+                    <input type="text" name="price_item_{{ service.id }}" class="form-control"
+                        value="{{ service.price_per_item if service.price_per_item is not none else '' }}">
+                </td>
+                <td>
+                    <input type="text" name="price_kg_{{ service.id }}" class="form-control"
+                        value="{{ service.price_per_kg if service.price_per_kg is not none else '' }}">
+                </td>
+                <td>
+                    <span class="badge bg-{{ 'success' if service.is_active else 'danger' }}">
+                        {{ 'Active' if service.is_active else 'Disabled' }}
+                    </span>
+                </td>
+                <td>
+                    <a href="{{ url_for('toggle_service_status', service_id=service.id) }}" class="btn btn-sm btn-warning">Toggle</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <button type="submit" class="btn btn-primary">📂 Save Price Changes</button>
+</form>
+
+<!-- Location Management Modal -->
+<div class="modal fade" id="locationModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Manage Service Locations</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="locationContent">
+                    <!-- Dynamic content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleService(serviceId) {
+    fetch(`/admin/services/${serviceId}/toggle`, {
+        method: 'GET'
+    }).then(response => {
+        if (response.ok) {
+            location.reload();
+        }
+    });
+}
+
+function manageLocations(serviceId, serviceName) {
+    document.querySelector('#locationModal .modal-title').textContent = `Manage Locations for ${serviceName}`;
+    const content = document.getElementById('locationContent');
+    content.innerHTML = `
+        <div class="row">
+            <div class="col-12">
+                <h6 class="mb-3">Available Pincodes</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Pincode</th>
+                                <th>Area</th>
+                                <th>City</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pincode in pincodes %}
+                            <tr>
+                                <td>{{ pincode.pincode }}</td>
+                                <td>{{ pincode.area_name }}</td>
+                                <td>{{ pincode.city }}</td>
+                                <td>
+                                    <span class="badge bg-{% if pincode.is_serviceable %}success{% else %}secondary{% endif %}">
+                                        {% if pincode.is_serviceable %}Serviceable{% else %}Not Serviceable{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" 
+                                            onclick="toggleServiceLocation(${serviceId}, '{{ pincode.pincode }}')">
+                                        Toggle
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+    new bootstrap.Modal(document.getElementById('locationModal')).show();
+}
+
+function toggleServiceLocation(serviceId, pincode) {
+    fetch(`/admin/services/toggle/${serviceId}/${pincode}`, {
+        method: 'GET'
+    }).then(response => {
+        if (response.ok) {
+            location.reload();
+        }
+    });
+}
+</script>
+{% endblock %}

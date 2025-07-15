@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Delivery Dashboard - SpinMate{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="bg-info text-white rounded p-4">
+                <h1 class="mb-2">Delivery Dashboard</h1>
+                <p class="mb-0">Hello {{ current_user.name }}, manage your delivery assignments here.</p>
+            </div>
+        </div>
+    </div>
+<!-- View Analytics Button -->
+    <div class="row mb-4">
+        <div class="col text-end">
+            <a href="{{ url_for('delivery_analytics') }}" class="btn btn-outline-info">
+                📊 View Analytics
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="text-primary mb-2">
+                        <i class="fas fa-truck fa-2x"></i>
+                    </div>
+                    <h5 class="card-title">Assigned Orders</h5>
+                    <h3 class="text-primary mb-0">{{ orders|length }}</h3>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="text-success mb-2">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                    <h5 class="card-title">Completed Today</h5>
+                    <h3 class="text-success mb-0">{{ completed_today }}</h3>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="text-warning mb-2">
+                        <i class="fas fa-clock fa-2x"></i>
+                    </div>
+                    <h5 class="card-title">Pending</h5>
+                    <h3 class="text-warning mb-0">{{ orders|selectattr('status', 'in', ['picked', 'washing'])|list|length }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Form -->
+    <form method="get" class="row g-3 mb-4">
+        <div class="col-md-4">
+            <label class="form-label">Filter by Pincode</label>
+            <select name="pincode" class="form-select">
+                <option value="">All</option>
+                {% for pin in pincodes %}
+                    <option value="{{ pin }}" {% if pin == pincode_filter %}selected{% endif %}>{{ pin }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Type</label>
+            <select name="type" class="form-select">
+                <option value="">All</option>
+                <option value="pickup" {% if type_filter == 'pickup' %}selected{% endif %}>Pickup</option>
+                <option value="delivery" {% if type_filter == 'delivery' %}selected{% endif %}>Delivery</option>
+            </select>
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary me-2">Filter</button>
+            <a href="{{ url_for('delivery_dashboard') }}" class="btn btn-outline-secondary">Reset</a>
+        </div>
+    </form>
+
+    <!-- Assigned Orders -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Assigned Orders</h5>
+                </div>
+                <div class="card-body">
+                    {% if orders %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Order #</th>
+                                        <th>Customer</th>
+                                        <th>Pickup Date</th>
+                                        <th>Address</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                        <th>Special Instructions</th>
+                                        <th>Stain Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in orders %}
+                                        <tr>
+                                            <td><strong>{{ order.order_number }}</strong></td>
+                                            <td>
+                                                {{ order.customer.name }}<br>
+                                                <small class="text-muted">{{ order.customer.phone }}</small>
+                                            </td>
+                                            <td>
+                                                {{ order.pickup_date.strftime('%Y-%m-%d') }}<br>
+                                                <small class="text-muted">{{ order.pickup_time }}</small>
+                                            </td>
+                                            <td>
+                                                <small>{{ order.pickup_address[:50] }}{% if order.pickup_address|length > 50 %}...{% endif %}</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{{ 'warning' if order.status == 'picked' else 'info' if order.status == 'washing' else 'success' }}">
+                                                    {{ order.status.title() }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <form method="POST" action="{{ url_for('update_order_status', order_id=order.id) }}" class="d-flex align-items-center">
+                                                    <select name="status" class="form-select form-select-sm me-2" required>
+                                                        <option value="">Select Status</option>
+                                                        <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>Pending</option>
+                                                        <option value="picked" {% if order.status == 'picked' %}selected{% endif %}>Picked Up</option>
+                                                        <option value="washing" {% if order.status == 'washing' %}selected{% endif %}>Washing</option>
+                                                        <option value="ready" {% if order.status == 'ready' %}selected{% endif %}>Ready for Delivery</option>
+                                                        <option value="out_for_pickup" {% if order.status == 'out_for_pickup' %}selected{% endif %}>Out for Pickup</option>
+                                                        <option value="out_for_delivery" {% if order.status == 'out_for_delivery' %}selected{% endif %}>Out for Delivery</option>
+                                                        <option value="delivered" {% if order.status == 'delivered' %}selected{% endif %}>Delivered</option>
+                                                        <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                                                    </select>
+                                                    <button type="submit" class="btn btn-sm btn-primary">Update</button>
+                                                </form>
+                                            </td>
+                                            <td>{{ order.special_instructions or '-' }}</td>
+                                            <td>
+                                                <table class="table table-sm">
+                                                    {% for item in order.order_items %}
+                                                        <tr>
+                                                          <td>{{ item.item_name }}</td>
+                                                          <td>{{ item.stain_notes or 'None' }}</td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-truck text-muted mb-3" style="font-size: 4rem; opacity: 0.3;"></i>
+                            <h5 class="text-muted">No assigned orders</h5>
+                            <p class="text-muted">New orders will appear here when assigned to you.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

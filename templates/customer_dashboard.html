@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Customer Dashboard - SpinMate{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <h1>Welcome to your Dashboard, {{ current_user.name }}!</h1>
+    </div>
+
+    <!-- Recent Orders -->
+    <div class="row mb-4">
+        <h2>Recent Orders</h2>
+        {% if orders %}
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Order Number</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Total Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                        <tr>
+                            <td><a href="{{ url_for('order_tracking', order_id=order.id) }}">{{ order.order_number }}</a></td>
+                            <td>{{ order.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ order.status }}</td>
+                            <td>₹{{ order.total_amount }}</td>
+                            <td>
+                                {% if order.status == 'Completed' and not order.feedback %}
+                                    <!-- Feedback Modal Trigger -->
+                                    <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#feedbackModal{{ order.id }}">Rate</button>
+                                    <!-- Feedback Modal -->
+                                    <div class="modal fade" id="feedbackModal{{ order.id }}" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <form method="POST" action="{{ url_for('submit_feedback', order_id=order.id) }}">
+                                                <div class="modal-content">
+                                                    <div class="modal-header"><h5>Rate Your Order</h5></div>
+                                                    <div class="modal-body">
+                                                        <input type="number" name="rating" min="0" max="5" step="0.1" required class="form-control" placeholder="Rating (0-5)">
+                                                        <textarea name="comment" class="form-control mt-2" placeholder="Comments"></textarea>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="submit" class="btn btn-primary">Submit</button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    <!-- Complaint Modal Trigger -->
+                                    <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#complaintModal{{ order.id }}">Complain</button>
+                                    <!-- Complaint Modal -->
+                                    <div class="modal fade" id="complaintModal{{ order.id }}" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <form method="POST" action="{{ url_for('submit_complaint', order_id=order.id) }}">
+                                                <div class="modal-content">
+                                                    <div class="modal-header"><h5>Submit Complaint</h5></div>
+                                                    <div class="modal-body">
+                                                        <textarea name="description" class="form-control" required placeholder="Describe your issue"></textarea>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="submit" class="btn btn-danger">Submit</button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                {% elif order.feedback %}
+                                    Rated: {{ order.feedback.rating }}<br>
+                                    "{{ order.feedback.comment }}"
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No recent orders.</p>
+        {% endif %}
+    </div>
+
+    <!-- Place New Order Button -->
+    <div class="row">
+        <a href="{{ url_for('new_order') }}" class="btn btn-primary">Place New Order</a>
+    </div>
+</div>
+{% endblock %}

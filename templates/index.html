@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Repl Auth</title>
+</head>
+<body>
+    {% if user_id %}
+        <h1>Hello, {{ user_name }}!</h1>
+        <p>Your user id is {{ user_id }}.</p>
+        <a href="{{ url_for('dashboard') }}">Go to Dashboard</a>
+    {% else %}
+        <h1>Hello! Please log in.</h1>
+        <div>
+            <script authed="location.reload()" src="https://auth.util.repl.co/script.js"></script>
+        </div>
+    {% endif %}
+</body>
+</html>
+<div class="hero-section">
+    <div class="container">
+        <div class="row align-items-center min-vh-100">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4" style="color: white;">
+                    Fast. Fresh. Flawless.
+                </h1>
+                <p class="lead mb-4">
+                    Experience the convenience of professional laundry services at your doorstep. 
+                    Schedule pickup, track your order, and get your clothes back fresh and clean.
+                </p>
+                <div class="d-flex gap-3 flex-wrap">
+                    {% if not current_user.is_authenticated %}
+                        <a href="{{ url_for('register') }}" class="btn premium-btn btn-lg">
+                            <i class="fas fa-user-plus me-2"></i>Get Started
+                        </a>
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('new_order') }}" class="btn premium-btn btn-lg">
+                            <i class="fas fa-plus me-2"></i>Place Order
+                        </a>
+                        <a href="{{ url_for('customer_dashboard') }}" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-home me-2"></i>Go to Dashboard
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="text-center">
+                    <i class="fas fa-tshirt" style="font-size: 15rem; opacity: 0.1; color: rgba(255,255,255,0.3);"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="py-5 bg-light">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="fw-bold">Why Choose SpinMate?</h2>
+                <p class="text-muted">Professional laundry services with modern convenience</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card premium-card h-100 border-0">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-clock premium-text" style="font-size: 3rem;"></i>
+                        </div>
+                        <h5 class="card-title premium-text">Fast Pickup & Delivery</h5>
+                        <p class="card-text">Schedule convenient pickup and delivery times that work with your schedule.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card premium-card h-100 border-0">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-leaf text-success" style="font-size: 3rem;"></i>
+                        </div>
+                        <h5 class="card-title premium-text">Eco-Friendly</h5>
+                        <p class="card-text">Choose our eco-wash option for environmentally responsible cleaning.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card premium-card h-100 border-0">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-mobile-alt text-info" style="font-size: 3rem;"></i>
+                        </div>
+                        <h5 class="card-title premium-text">Real-time Tracking</h5>
+                        <p class="card-text">Track your order status from pickup to delivery with live updates.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Services Section -->
+<div class="py-5">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="fw-bold">Our Services</h2>
+                <p class="text-muted">Professional care for all your laundry needs</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="service-card text-center p-4">
+                    <i class="fas fa-tshirt text-primary mb-3" style="font-size: 2.5rem;"></i>
+                    <h5>Wash & Fold</h5>
+                    <p class="text-muted">Starting at ₹80/kg</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6">
+                <div class="service-card text-center p-4">
+                    <i class="fas fa-iron text-warning mb-3" style="font-size: 2.5rem;"></i>
+                    <h5>Wash & Iron</h5>
+                    <p class="text-muted">Starting at ₹120/kg</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6">
+                <div class="service-card text-center p-4">
+                    <i class="fas fa-gem text-info mb-3" style="font-size: 2.5rem;"></i>
+                    <h5>Dry Clean</h5>
+                    <p class="text-muted">Starting at ₹200/kg</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6">
+                <div class="service-card text-center p-4">
+                    <i class="fas fa-star text-success mb-3" style="font-size: 2.5rem;"></i>
+                    <h5>Premium Care</h5>
+                    <p class="text-muted">Starting at ₹150/kg</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA Section -->
+<div class="py-5 bg-primary text-white">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-4">Ready to Experience SpinMate?</h2>
+        <p class="lead mb-4">Join thousands of satisfied customers who trust us with their laundry.</p>
+        {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('register') }}" class="btn btn-light btn-lg">
+                <i class="fas fa-rocket me-2"></i>Get Started Today
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

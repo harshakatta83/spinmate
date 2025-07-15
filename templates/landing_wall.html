@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}SpinMate - Premium Laundry, Hyderabad’s Most Trusted{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+    <!-- Hero Section -->
+    <section class="mb-5">
+        <div class="card border-0 premium-card hero-section p-5 mb-4 shadow-lg text-center">
+            <div class="container">
+                <h1 class="display-4 fw-bold mb-2 premium-text">The Uber of Laundry is Here.</h1>
+                <p class="lead opacity-75 mb-4">Track your laundry like a food delivery – live, accurate, and fast.</p>
+                <a href="{{ url_for('login') }}" class="btn premium-btn btn-lg px-5 py-3 shadow" style="font-size:1.25rem;">
+                    Book Your First Wash &rarr;
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust Section -->
+    <section class="text-center mb-5">
+        <h2 class="fw-bold mb-2 text-success">Hyderabad’s Most Trusted Laundry</h2>
+        <p class="fs-5 mb-4 premium-accent">30,000+ KGs Washed with Love</p>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div id="testimonialsCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner rounded-4 shadow-sm bg-white">
+                        <div class="carousel-item active p-4">
+                            <blockquote class="blockquote mb-0">
+                                <p class="fs-5 lh-base">“SpinMate picked up my laundry on time and delivered it sparkling clean. Live tracking is a game-changer!”</p>
+                                <footer class="blockquote-footer">Aarav Reddy, <cite>Jubilee Hills</cite></footer>
+                            </blockquote>
+                        </div>
+                        <div class="carousel-item p-4">
+                            <blockquote class="blockquote mb-0">
+                                <p class="fs-5 lh-base">“Love the transparent pricing and super-fast turnaround. No more laundry weekends!”</p>
+                                <footer class="blockquote-footer">Priya Sharma, <cite>Madhapur</cite></footer>
+                            </blockquote>
+                        </div>
+                        <div class="carousel-item p-4">
+                            <blockquote class="blockquote mb-0">
+                                <p class="fs-5 lh-base">“Eco-friendly wash and friendly staff. Hyderabad’s best laundry experience!”</p>
+                                <footer class="blockquote-footer">Srinivas Rao, <cite>Banjara Hills</cite></footer>
+                            </blockquote>
+                        </div>
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#testimonialsCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon bg-secondary rounded-circle" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#testimonialsCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon bg-secondary rounded-circle" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Our Services Section (Feature Highlights) -->
+    <section class="mb-5">
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h3 class="fw-bold premium-text mb-3">Our Services</h3>
+                <p class="text-muted fs-5">We bring premium care to your doorstep. Experience the best laundry, dry cleaning, and more – all managed in real time.</p>
+            </div>
+        </div>
+        <div class="row g-4 justify-content-center">
+            <div class="col-md-4 col-sm-6">
+                <div class="service-card h-100 border-0 shadow-sm text-center py-4 px-3">
+                    <div class="feature-icon mb-3"><i class="fas fa-map-marker-alt fa-2x text-primary"></i></div>
+                    <h5 class="fw-semibold mb-2">Live Order Tracking</h5>
+                    <p class="text-muted mb-0">Track every step of your laundry, from pickup to delivery, with real-time updates.</p>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="service-card h-100 border-0 shadow-sm text-center py-4 px-3">
+                    <div class="feature-icon mb-3"><i class="fas fa-leaf fa-2x text-success"></i></div>
+                    <h5 class="fw-semibold mb-2">Eco-Friendly Wash</h5>
+                    <p class="text-muted mb-0">Eco-safe detergents and water-saving processes for a greener, cleaner city.</p>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="service-card h-100 border-0 shadow-sm text-center py-4 px-3">
+                    <div class="feature-icon mb-3"><i class="fas fa-truck fa-2x text-info"></i></div>
+                    <h5 class="fw-semibold mb-2">Free Pickup &amp; Delivery</h5>
+                    <p class="text-muted mb-0">Doorstep service, always included. No extra charge, no stress.</p>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="service-card h-100 border-0 shadow-sm text-center py-4 px-3">
+                    <div class="feature-icon mb-3"><i class="fas fa-bolt fa-2x text-warning"></i></div>
+                    <h5 class="fw-semibold mb-2">24hr Lightning Turnaround</h5>
+                    <p class="text-muted mb-0">Most orders picked, washed, and delivered in just a day. Fastest in Hyderabad.</p>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="service-card h-100 border-0 shadow-sm text-center py-4 px-3">
+                    <div class="feature-icon mb-3"><i class="fas fa-tshirt fa-2x text-secondary"></i></div>
+                    <h5 class="fw-semibold mb-2">Premium Fabric Care</h5>
+                    <p class="text-muted mb-0">Specialized processes for delicates, silks, and branded wear. Handle with love.</p>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="service-card h-100 border-0 shadow-sm text-center py-4 px-3">
+                    <div class="feature-icon mb-3"><i class="fas fa-rupee-sign fa-2x text-primary"></i></div>
+                    <h5 class="fw-semibold mb-2">Transparent Pricing</h5>
+                    <p class="text-muted mb-0">Flat rates, no hidden charges, and pricing displayed upfront.</p>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="service-card h-100 border-0 shadow-sm text-center py-4 px-3">
+                    <div class="feature-icon mb-3"><i class="fas fa-map fa-2x text-danger"></i></div>
+                    <h5 class="fw-semibold mb-2">Wide Area Coverage</h5>
+                    <p class="text-muted mb-0">Serving Hyderabad, Secunderabad, LB Nagar, Kukatpally, Gachibowli, Hitech City, and more.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Scheduler Teaser -->
+    <section class="text-center my-5">
+        <span class="badge bg-warning text-dark fs-5 shadow-sm py-3 px-4">
+            <i class="fas fa-robot me-2"></i>
+            AI Smart Scheduler: Pickup auto-matched to your routine.
+        </span>
+    </section>
+
+    <!-- ₹49 Offer Banner -->
+    <section class="py-4 mb-5 bg-gradient-primary rounded-3 text-center text-white shadow-lg">
+        <div class="container">
+            <h4 class="fw-bold mb-2">Get your first wash for just <span class="premium-accent">₹49</span>!</h4>
+            <p class="mb-1 fs-5">Use Promo Code: <span class="badge bg-light text-primary px-2 py-1 fs-6">SPIN49</span> <span class="fw-normal">(Valid for new users only)</span></p>
+            <a href="{{ url_for('login') }}" class="btn btn-light btn-lg mt-2 text-primary fw-bold shadow-sm px-4 py-2" style="transition: box-shadow 0.2s;">
+                Claim Offer
+            </a>
+        </div>
+    </section>
+
+    <!-- CTA Footer Section -->
+    <section class="text-center mt-5 mb-4">
+        <h2 class="fw-bold mb-3 text-dark">Laundry Sucks. We Made it Not Suck.</h2>
+        <a href="{{ url_for('register') }}" class="btn premium-btn btn-lg px-5 py-3 shadow" style="font-size:1.2rem;">
+            Start Now
+        </a>
+    </section>
+
+</div>
+{% endblock %}

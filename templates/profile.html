@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - SpinMate{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-user me-2"></i>My Profile</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.name.label(class="form-label") }}
+                                    {{ form.name(class="form-control") }}
+                                    {% if form.name.errors %}
+                                        <div class="text-danger mt-1">
+                                            {% for error in form.name.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.phone.label(class="form-label") }}
+                                    {{ form.phone(class="form-control") }}
+                                    {% if form.phone.errors %}
+                                        <div class="text-danger mt-1">
+                                            {% for error in form.phone.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" value="{{ current_user.email }}" disabled>
+                            <small class="text-muted">Email cannot be changed</small>
+                        </div>
+                        
+                        <div class="mb-4">
+                            {{ form.address.label(class="form-label") }}
+                            {{ form.address(class="form-control", rows="3") }}
+                            {% if form.address.errors %}
+                                <div class="text-danger mt-1">
+                                    {% for error in form.address.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            {% if current_user.role == 'customer' %}
+                <!-- Account Stats -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <div class="text-success mb-2">
+                                    <i class="fas fa-wallet fa-2x"></i>
+                                </div>
+                                <h5 class="card-title">Wallet Balance</h5>
+                                <h3 class="text-success mb-0">₹{{ "%.2f"|format(current_user.wallet_balance) }}</h3>
+                                <button class="btn btn-sm btn-outline-success mt-2">
+                                    <i class="fas fa-plus me-1"></i>Add Money
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <div class="text-warning mb-2">
+                                    <i class="fas fa-star fa-2x"></i>
+                                </div>
+                                <h5 class="card-title">Loyalty Points</h5>
+                                <h3 class="text-warning mb-0">{{ current_user.loyalty_points }}</h3>
+                                <small class="text-muted">Earn 1 point per ₹10 spent</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Account History -->
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Account Activity</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Account Created</strong>
+                                    <br><small class="text-muted">Welcome to SpinMate!</small>
+                                </div>
+                                <small class="text-muted">{{ current_user.created_at.strftime('%Y-%m-%d') }}</small>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Total Orders</strong>
+                                    <br><small class="text-muted">Lifetime orders placed</small>
+                                </div>
+                                <span class="badge bg-primary rounded-pill">{{ current_user.orders|length }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Customer Status</strong>
+                                    <br><small class="text-muted">Account standing</small>
+                                </div>
+                                <span class="badge bg-success rounded-pill">Active</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

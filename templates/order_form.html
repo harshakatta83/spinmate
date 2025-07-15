@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}New Order - SpinMate{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-plus me-2"></i>Place New Order</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="orderForm">
+                        {{ pincode_form.hidden_tag() }}
+                        {{ order_form.hidden_tag() }}
+
+                        <!-- Step 1: Pincode Details -->
+                        <div class="mb-4">
+                            <h5 class="text-primary mb-3">Enter Pincode</h5>
+                            <div class="mb-3">
+                                {{ pincode_form.pincode.label(class="form-label") }}
+                                {{ pincode_form.pincode(class="form-control", placeholder="Enter your pincode", id="pincode_input") }}
+                                {% if pincode_form.pincode.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in pincode_form.pincode.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <button type="button" class="btn btn-outline-primary" id="validatePincodeBtn">Validate Pincode</button>
+                            <div id="pincodeStatus" class="mt-2"></div>
+                        </div>
+
+                        <!-- Step 2: Other Details (Hidden Initially) -->
+                        <div id="orderDetails" style="display: none;">
+                            <!-- Pickup Details -->
+                            <div class="mb-4">
+                                <h5 class="text-primary mb-3">Pickup Details</h5>
+                                <div class="mb-3">
+                                    {{ order_form.pickup_address.label(class="form-label") }}
+                                    {{ order_form.pickup_address(class="form-control", rows="3", placeholder="Enter complete pickup address", id="pickup_address") }}
+                                    {% if order_form.pickup_address.errors %}
+                                        <div class="text-danger mt-1">
+                                            {% for error in order_form.pickup_address.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            {{ order_form.pickup_date.label(class="form-label") }}
+                                            {{ order_form.pickup_date(class="form-control") }}
+                                            {% if order_form.pickup_date.errors %}
+                                                <div class="text-danger mt-1">
+                                                    {% for error in order_form.pickup_date.errors %}
+                                                        <small>{{ error }}</small>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            {{ order_form.pickup_time.label(class="form-label") }}
+                                            {{ order_form.pickup_time(class="form-control") }}
+                                            {% if order_form.pickup_time.errors %}
+                                                <div class="text-danger mt-1">
+                                                    {% for error in order_form.pickup_time.errors %}
+                                                        <small>{{ error }}</small>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Delivery Details -->
+                            <div class="mb-4">
+                                <h5 class="text-primary mb-3">Delivery Details</h5>
+                                <div class="mb-3">
+                                    {{ order_form.delivery_address.label(class="form-label") }}
+                                    {{ order_form.delivery_address(class="form-control", rows="3", placeholder="Enter complete delivery address (can be same as pickup)", id="delivery_address") }}
+                                    {% if order_form.delivery_address.errors %}
+                                        <div class="text-danger mt-1">
+                                            {% for error in order_form.delivery_address.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="copyPickupAddress()">
+                                            <i class="fas fa-copy me-1"></i>Same as pickup address
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Special Instructions -->
+                            <div class="mb-4">
+                                <h5 class="text-primary mb-3">Additional Options</h5>
+                                <div class="mb-3">
+                                    {{ order_form.special_instructions.label(class="form-label") }}
+                                    {{ order_form.special_instructions(class="form-control", rows="3", placeholder="Any special instructions for handling your clothes") }}
+                                    {% if order_form.special_instructions.errors %}
+                                        <div class="text-danger mt-1">
+                                            {% for error in order_form.special_instructions.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-check">
+                                    {{ order_form.eco_wash(class="form-check-input") }}
+                                    {{ order_form.eco_wash.label(class="form-check-label") }}
+                                    <small class="text-muted d-block">Choose eco-friendly washing for environmental protection</small>
+                                </div>
+                            </div>
+                            <div class="d-grid">
+                                {{ order_form.submit(class="btn btn-primary btn-lg") }}
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Order Summary Sidebar (unchanged) -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Service Options</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Available services and pricing:</p>
+                    {% for service in services %}
+                        <div class="border rounded p-3 mb-3">
+                            <h6 class="text-primary mb-1">{{ service.name }}</h6>
+                            <p class="text-muted small mb-2">{{ service.description }}</p>
+                            <div class="d-flex justify-content-between">
+                                {% if service.price_per_kg is not none %}
+                                    <small><strong>₹{{ "%.0f"|format(service.price_per_kg) }}/kg</strong></small>
+                                {% elif service.price_per_item is not none %}
+                                    <small><strong>₹{{ "%.0f"|format(service.price_per_item) }}/item</strong></small>
+                                {% else %}
+                                    <small><strong>Price not set</strong></small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                    <div class="alert alert-info">
+                        <small>
+                            <i class="fas fa-info-circle me-1"></i>
+                            You'll add specific items and select services in the next step.
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <!-- Benefits -->
+            <div class="card border-0 shadow-sm mt-3">
+                <div class="card-body">
+                    <h6 class="text-success mb-3">Why Choose SpinMate?</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <small>Free pickup & delivery</small>
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <small>Real-time order tracking</small>
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <small>Quality guarantee</small>
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <small>Eco-friendly options</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyPickupAddress() {
+    const pickupAddress = document.getElementById('pickup_address').value;
+    document.getElementById('delivery_address').value = pickupAddress;
+}
+
+// Simple pincode validation (you can replace with AJAX for server-side check)
+document.getElementById('validatePincodeBtn').addEventListener('click', function() {
+    const pincode = document.getElementById('pincode_input').value;
+    const statusDiv = document.getElementById('pincodeStatus');
+    // Basic Indian pincode validation (6 digits)
+    const regex = /^[1-9][0-9]{5}$/;
+    if (regex.test(pincode)) {
+        statusDiv.innerHTML = '<span class="text-success">Pincode is valid!</span>';
+        document.getElementById('orderDetails').style.display = 'block';
+        // Optionally disable pincode input to prevent editing
+        document.getElementById('pincode_input').readOnly = true;
+        this.disabled = true;
+    } else {
+        statusDiv.innerHTML = '<span class="text-danger">Invalid pincode. Please enter a valid 6-digit pincode.</span>';
+        document.getElementById('orderDetails').style.display = 'none';
+    }
+});
+</script>
+{% endblock %}

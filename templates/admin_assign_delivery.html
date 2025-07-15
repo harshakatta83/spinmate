@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Assign Delivery - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Assign Delivery</h2>
+
+    <!-- Status Filter -->
+    <div class="mb-3">
+        <form method="GET" action="{{ url_for('admin_assign_delivery') }}">
+            <label for="status">Filter by Status:</label>
+            <select class="form-select" id="status" name="status" onchange="this.form.submit()">
+                <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All</option>
+                <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="ready" {% if status_filter == 'ready' %}selected{% endif %}>Ready</option>
+                <option value="picked" {% if status_filter == 'picked' %}selected{% endif %}>Picked</option>
+                <option value="washing" {% if status_filter == 'washing' %}selected{% endif %}>Washing</option>
+                <option value="drying" {% if status_filter == 'drying' %}selected{% endif %}>Drying</option>
+                <option value="ironing" {% if status_filter == 'ironing' %}selected{% endif %}>Ironing</option>
+                <option value="out_for_delivery" {% if status_filter == 'out_for_delivery' %}selected{% endif %}>Out for Delivery</option>
+                <option value="delivered" {% if status_filter == 'delivered' %}selected{% endif %}>Delivered</option>
+                <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Cancelled</option>
+            </select>
+        </form>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Orders Ready for Delivery</h5>
+        </div>
+        <div class="card-body">
+            {% if orders %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Order #</th>
+                                <th>Customer</th>
+                                <th>Address</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr>
+                                <td>{{ order.order_number }}</td>
+                                <td>{{ order.customer.name }}</td>
+                                <td>{{ order.delivery_address }}</td>
+                                <td>{{ order.status }}</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#assignDeliveryModal{{ order.id }}">
+                                        Assign Delivery
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <!-- Modal -->
+                            <div class="modal fade" id="assignDeliveryModal{{ order.id }}" tabindex="-1" aria-labelledby="assignDeliveryModalLabel{{ order.id }}" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="assignDeliveryModalLabel{{ order.id }}">Assign Delivery for Order #{{ order.order_number }}</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form method="POST" action="{{ url_for('assign_delivery_person', order_id=order.id) }}">
+                                                <div class="mb-3">
+                                                    <label for="deliveryPerson" class="form-label">Select Delivery Person</label>
+                                                    <select class="form-select" id="deliveryPerson" name="delivery_person_id" required>
+                                                        {% for person in delivery_people %}
+                                                        <option value="{{ person.id }}">{{ person.name }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="status" class="form-label">Select Status</label>
+                                                    <select class="form-select" id="status" name="status" required>
+                                                        <option value="out_for_pickup">Out for Pickup</option>
+                                                        <option value="out_for_delivery">Out for Delivery</option>
+                                                    </select>
+                                                </div>
+                                                <button type="submit" class="btn btn-primary">Assign</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">No orders ready for delivery.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

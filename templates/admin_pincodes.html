@@ -1,0 +1,200 @@
+{% extends "admin_layout.html" %}
+
+{% block page_title %}Pincode Management{% endblock %}
+
+{% block content %}
+<!-- Pincode Stats -->
+<div class="row g-4 mb-5">
+    <div class="col-md-6 col-lg-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <p class="stats-label">Total Pincodes</p>
+                    <h3 class="stats-number">{{ pincodes|length }}</h3>
+                </div>
+                <div class="stats-icon" style="background-color: rgba(139, 154, 107, 0.1);">
+                    <i class="fas fa-map-marked-alt" style="color: #8b9a6b;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <p class="stats-label">Serviceable Areas</p>
+                    <h3 class="stats-number">{{ pincodes|selectattr('is_serviceable')|list|length }}</h3>
+                </div>
+                <div class="stats-icon" style="background-color: rgba(34, 197, 94, 0.1);">
+                    <i class="fas fa-check-circle" style="color: #22c55e;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <p class="stats-label">Coverage Cities</p>
+                    <h3 class="stats-number">{{ pincodes|map(attribute='city')|unique|list|length }}</h3>
+                </div>
+                <div class="stats-icon" style="background-color: rgba(59, 130, 246, 0.1);">
+                    <i class="fas fa-city" style="color: #3b82f6;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <p class="stats-label">Coverage States</p>
+                    <h3 class="stats-number">{{ pincodes|map(attribute='state')|unique|list|length }}</h3>
+                </div>
+                <div class="stats-icon" style="background-color: rgba(245, 158, 11, 0.1);">
+                    <i class="fas fa-flag" style="color: #f59e0b;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pincode Management -->
+<div class="row">
+    <div class="col-12">
+        <div class="status-timeline">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 style="color: #2d3436; font-weight: 600;">Pincode Management</h5>
+                <button class="btn btn-primary" onclick="addNewPincode()">
+                    <i class="fas fa-plus"></i> Add Pincode
+                </button>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Pincode</th>
+                            <th>Area Name</th>
+                            <th>City</th>
+                            <th>State</th>
+                            <th>Delivery Fee</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pincode in pincodes %}
+                        <tr>
+                            <td><strong>{{ pincode.pincode }}</strong></td>
+                            <td>{{ pincode.area_name }}</td>
+                            <td>{{ pincode.city }}</td>
+                            <td>{{ pincode.state }}</td>
+                            <td>₹{{ pincode.delivery_fee }}</td>
+                            <td>
+                                {% if pincode.is_serviceable %}
+                                    <span class="badge bg-success">Serviceable</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Not Serviceable</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" 
+                                            onclick="editPincode('{{ pincode.pincode }}')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-outline-{% if pincode.is_serviceable %}danger{% else %}success{% endif %}" 
+                                            onclick="togglePincode('{{ pincode.pincode }}')">
+                                        {% if pincode.is_serviceable %}
+                                            <i class="fas fa-times"></i>
+                                        {% else %}
+                                            <i class="fas fa-check"></i>
+                                        {% endif %}
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Pincode Modal -->
+<div class="modal fade" id="pincodeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="pincodeForm" method="POST" action="{{ url_for('admin_pincodes') }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Pincode</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Pincode</label>
+                        <input type="text" class="form-control" name="pincode" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Area Name</label>
+                        <input type="text" class="form-control" name="area_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">City</label>
+                        <input type="text" class="form-control" name="city" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">State</label>
+                        <input type="text" class="form-control" name="state" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Delivery Fee (₹)</label>
+                        <input type="number" class="form-control" name="delivery_fee" step="0.01" value="0">
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="is_serviceable" checked>
+                        <label class="form-check-label">Serviceable</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function addNewPincode() {
+    document.querySelector('#pincodeModal .modal-title').textContent = 'Add New Pincode';
+    document.getElementById('pincodeForm').reset();
+    new bootstrap.Modal(document.getElementById('pincodeModal')).show();
+}
+
+function editPincode(pincode) {
+    document.querySelector('#pincodeModal .modal-title').textContent = 'Edit Pincode';
+    // Here you would populate the form with existing data
+    new bootstrap.Modal(document.getElementById('pincodeModal')).show();
+}
+
+function togglePincode(pincode) {
+    if (confirm('Are you sure you want to toggle the serviceability of this pincode?')) {
+        fetch(`/admin/pincodes/${pincode}/toggle`, {
+            method: 'GET'
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Complaints - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Customer Complaints</h2>
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">All Complaints</h5>
+        </div>
+        <div class="card-body">
+            {% if complaints %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Customer</th>
+                                <th>Order</th>
+                                <th>Submitted On</th>
+                                <th>Message</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for complaint in complaints %}
+                            <tr>
+                                <td>{{ complaint.id }}</td>
+                                <td>{{ complaint.customer.name }}</td>
+                                <td>{{ complaint.order.order_number }}</td>
+                                <td>{{ complaint.created_at.strftime('%Y-%m-%d %I:%M %p') }}</td>
+                                <td>{{ complaint.message }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if complaint.status == 'resolved' else 'warning' }}">
+                                        {{ complaint.status.title() }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('view_complaint', complaint_id=complaint.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                    {% if complaint.status != 'resolved' %}
+                                    <form method="POST" action="{{ url_for('resolve_complaint', complaint_id=complaint.id) }}" style="display:inline;">
+                                        <button type="submit" class="btn btn-sm btn-success">Resolve</button>
+                                    </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">No complaints yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

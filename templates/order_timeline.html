@@ -1,0 +1,406 @@
+{% extends "base.html" %}
+
+{% block title %}Order Timeline - {{ order.order_number }} - SpinMate{% endblock %}
+
+{% block head %}
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initMap" async defer></script>
+<style>
+    .timeline-container {
+        position: relative;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .timeline-step {
+        display: flex;
+        align-items: center;
+        padding: 1.5rem 0;
+        position: relative;
+    }
+    
+    .timeline-step:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        left: 24px;
+        top: 60px;
+        width: 2px;
+        height: calc(100% - 20px);
+        background: #e9ecef;
+        z-index: 1;
+    }
+    
+    .timeline-step.completed:not(:last-child)::after {
+        background: var(--primary-color);
+    }
+    
+    .timeline-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1.5rem;
+        position: relative;
+        z-index: 2;
+        font-size: 1.25rem;
+        border: 3px solid #e9ecef;
+        background: white;
+    }
+    
+    .timeline-step.completed .timeline-icon {
+        border-color: var(--primary-color);
+        background: var(--primary-color);
+        color: white;
+    }
+    
+    .timeline-step.current .timeline-icon {
+        border-color: var(--primary-color);
+        background: white;
+        color: var(--primary-color);
+        box-shadow: 0 0 0 4px rgba(139, 154, 107, 0.2);
+    }
+    
+    .timeline-content {
+        flex: 1;
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        border: 1px solid #f1f3f4;
+    }
+    
+    .timeline-step.current .timeline-content {
+        border-color: var(--primary-color);
+        box-shadow: 0 4px 16px rgba(139, 154, 107, 0.15);
+    }
+    
+    .map-container {
+        height: 400px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+    
+    .order-info-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        border: 1px solid #f1f3f4;
+    }
+    
+    .service-tag {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        background: rgba(139, 154, 107, 0.1);
+        color: var(--primary-color);
+        border-radius: 20px;
+        font-size: 0.875rem;
+        margin: 0.25rem 0.25rem 0.25rem 0;
+    }
+    
+    .estimated-time {
+        background: linear-gradient(135deg, #f8f9f7 0%, #f2f4f0 100%);
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+        border: 1px solid #e9ecef;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                    {% if current_user.role == 'customer' %}
+                        <li class="breadcrumb-item"><a href="{{ url_for('customer_dashboard') }}">Dashboard</a></li>
+                    {% elif current_user.role == 'admin' %}
+                        <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">Admin</a></li>
+                    {% endif %}
+                    <li class="breadcrumb-item active">Order Timeline</li>
+                </ol>
+            </nav>
+            <h2 class="mb-1" style="color: #2d3436;">Order Timeline</h2>
+            <p class="text-muted">Track your order: <strong>{{ order.order_number }}</strong></p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Order Information -->
+        <div class="col-lg-4">
+            <div class="order-info-card mb-4">
+                <h5 class="mb-3" style="color: #2d3436;">Order Details</h5>
+                <div class="mb-3">
+                    <strong>Order Number:</strong><br>
+                    <span class="text-muted">{{ order.order_number }}</span>
+                </div>
+                <div class="mb-3">
+                    <strong>Order Date:</strong><br>
+                    <span class="text-muted">{{ order.created_at.strftime('%B %d, %Y at %I:%M %p') }}</span>
+                </div>
+                <div class="mb-3">
+                    <strong>Services:</strong><br>
+                    {% for item in order.order_items %}
+                        <span class="service-tag">{{ item.service.name }}</span>
+                    {% endfor %}
+                </div>
+                <div class="mb-3">
+                    <strong>Total Amount:</strong><br>
+                    <span class="h5 text-success">₹{{ "%.2f"|format(order.total_amount) }}</span>
+                </div>
+                {% if order.estimated_completion %}
+                <div class="estimated-time">
+                    <small class="text-muted d-block">Estimated Completion</small>
+                    <strong>{{ order.estimated_completion.strftime('%B %d, %Y') }}</strong><br>
+                    <small>{{ order.estimated_completion.strftime('%I:%M %p') }}</small>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Live Tracking -->
+            <div class="order-info-card">
+                <h5 class="mb-3" style="color: #2d3436;">
+                    <i class="fas fa-map-marker-alt text-primary me-2"></i>Live Tracking
+                </h5>
+                <div id="map" class="map-container"></div>
+                {% if current_user.role == 'delivery' %}
+                <div class="mt-3">
+                    <button class="btn btn-primary w-100" onclick="updateLocation()">
+                        <i class="fas fa-map-pin me-2"></i>Update My Location
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="col-lg-8">
+            <div class="timeline-container">
+                {% for step in timeline %}
+                <div class="timeline-step {% if step.completed %}completed{% endif %} {% if step.current %}current{% endif %}">
+                    <div class="timeline-icon">
+                        <i class="{{ step.icon }}"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1" style="color: #2d3436;">{{ step.title }}</h6>
+                                {% if step.completed and step.timestamp %}
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>
+                                    {{ step.timestamp.strftime('%B %d, %Y at %I:%M %p') }}
+                                </small>
+                                {% elif step.current %}
+                                <small class="text-primary">
+                                    <i class="fas fa-spinner fa-spin me-1"></i>In Progress
+                                </small>
+                                {% else %}
+                                <small class="text-muted">Pending</small>
+                                {% endif %}
+                            </div>
+                            {% if step.completed %}
+                            <div class="text-success">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            {% elif step.current %}
+                            <div class="text-primary">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if step.current and current_user.role == 'admin' %}
+                        <div class="mt-3">
+                            <form method="POST" action="{{ url_for('update_order_status', order_id=order.id) }}" class="d-flex gap-2">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                <select name="status" class="form-select form-select-sm" style="max-width: 200px;">
+                                    {% for future_step in timeline[loop.index0:] %}
+                                    <option value="{{ future_step.status }}">{{ future_step.title }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-primary">
+                                    Update Status
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
+                        
+                        {% if step.status == 'delivered' and step.completed and current_user.role == 'customer' %}
+                        <div class="mt-3">
+                            <a href="{{ url_for('download_invoice', order_id=order.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-download me-1"></i>Download Invoice
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let map;
+let markers = [];
+
+function initMap() {
+    // Default center (can be changed based on order location)
+    const defaultCenter = { lat: 28.6139, lng: 77.2090 }; // New Delhi
+    
+    map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 13,
+        center: defaultCenter,
+        styles: [
+            {
+                featureType: "all",
+                elementType: "geometry.fill",
+                stylers: [{ color: "#f8f9f7" }]
+            },
+            {
+                featureType: "road",
+                elementType: "geometry",
+                stylers: [{ color: "#ffffff" }]
+            }
+        ]
+    });
+
+    // Load order location data
+    loadOrderLocations();
+    
+    // Refresh location every 30 seconds
+    setInterval(loadOrderLocations, 30000);
+}
+
+function loadOrderLocations() {
+    fetch(`/api/order/{{ order.id }}/location`)
+        .then(response => response.json())
+        .then(data => {
+            clearMarkers();
+            
+            // Add pickup location marker
+            if (data.pickup_lat && data.pickup_lng) {
+                addMarker(
+                    { lat: data.pickup_lat, lng: data.pickup_lng },
+                    'Pickup Location',
+                    'https://maps.google.com/mapfiles/ms/icons/green-dot.png'
+                );
+            }
+            
+            // Add delivery location marker
+            if (data.delivery_lat && data.delivery_lng) {
+                addMarker(
+                    { lat: data.delivery_lat, lng: data.delivery_lng },
+                    'Delivery Location',
+                    'https://maps.google.com/mapfiles/ms/icons/red-dot.png'
+                );
+            }
+            
+            // Add current location marker if available
+            if (data.current_location) {
+                // Parse current location if it's coordinates
+                const coords = data.current_location.split(',');
+                if (coords.length === 2) {
+                    const lat = parseFloat(coords[0]);
+                    const lng = parseFloat(coords[1]);
+                    addMarker(
+                        { lat: lat, lng: lng },
+                        'Current Location',
+                        'https://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+                    );
+                    
+                    // Center map on current location
+                    map.setCenter({ lat: lat, lng: lng });
+                }
+            }
+            
+            // Fit map to show all markers
+            if (markers.length > 0) {
+                const bounds = new google.maps.LatLngBounds();
+                markers.forEach(marker => bounds.extend(marker.getPosition()));
+                map.fitBounds(bounds);
+                
+                // Ensure minimum zoom level
+                const listener = google.maps.event.addListener(map, "idle", function() {
+                    if (map.getZoom() > 16) map.setZoom(16);
+                    google.maps.event.removeListener(listener);
+                });
+            }
+        })
+        .catch(error => console.error('Error loading order locations:', error));
+}
+
+function addMarker(position, title, icon) {
+    const marker = new google.maps.Marker({
+        position: position,
+        map: map,
+        title: title,
+        icon: icon
+    });
+    
+    const infoWindow = new google.maps.InfoWindow({
+        content: `<div style="padding: 8px;"><strong>${title}</strong></div>`
+    });
+    
+    marker.addListener('click', function() {
+        infoWindow.open(map, marker);
+    });
+    
+    markers.push(marker);
+}
+
+function clearMarkers() {
+    markers.forEach(marker => marker.setMap(null));
+    markers = [];
+}
+
+function updateLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            
+            // Send location update to server
+            fetch(`/api/order/{{ order.id }}/update-location`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    lat: lat,
+                    lng: lng
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadOrderLocations(); // Refresh map
+                    alert('Location updated successfully!');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating location:', error);
+                alert('Failed to update location. Please try again.');
+            });
+        }, function(error) {
+            alert('Error getting your location: ' + error.message);
+        });
+    } else {
+        alert('Geolocation is not supported by this browser.');
+    }
+}
+
+// Auto-refresh timeline every 60 seconds
+setInterval(function() {
+    location.reload();
+}, 60000);
+</script>
+{% endblock %}
