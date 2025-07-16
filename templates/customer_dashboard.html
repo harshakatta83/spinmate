@@ -25,7 +25,13 @@
                 <tbody>
                     {% for order in orders %}
                         <tr>
-                            <td><a href="{{ url_for('order_tracking', order_id=order.id) }}">{{ order.order_number }}</a></td>
+                            <td>
+                    {% if order and order.id %}
+                        <a href="{{ url_for('order_tracking', order_id=order.id) }}">{{ order.order_number }}</a>
+                    {% else %}
+                        <span>Order ID unavailable</span>
+                    {% endif %}
+                </td>
                             <td>{{ order.created_at.strftime('%Y-%m-%d') }}</td>
                             <td>{{ order.status }}</td>
                             <td>₹{{ order.total_amount }}</td>
