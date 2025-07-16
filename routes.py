@@ -1,6 +1,7 @@
-from flask import render_template, request, redirect, url_for, flash, session, jsonify, make_response
+from flask import render_template, request, redirect, url_for, flash, session, jsonify, make_response, send_file
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.routing.exceptions import BuildError
 from datetime import datetime, date
 import uuid
 from reportlab.pdfgen import canvas
@@ -414,11 +415,20 @@ def finalize_order(order_id):
     order.discount = discount
     order.total_amount = total_amount
     
-    db.session.commit()
-    # Clear the session order id after finalizing
-    session.pop('current_order_id', None)    
-    flash('Order finalized successfully!', 'success')
-    return redirect(url_for('order_tracking', order_id=order.id))
+    try:
+        db.session.commit()
+        # Verify order has an ID after commit
+        if not order.id:
+            raise ValueError("Order ID not generated after database commit")
+        
+        # Clear the session order id after finalizing
+        session.pop('current_order_id', None)    
+        flash('Order finalized successfully!', 'success')
+        return redirect(url_for('order_tracking', order_id=order.id))
+    except Exception as e:
+        db.session.rollback()
+        flash('An error occurred while finalizing your order. Please try again.', 'error')
+        return redirect(url_for('customer_dashboard'))
 
 @app.route('/order/<int:order_id>')
 @login_required
@@ -467,14 +477,23 @@ def update_order_status(order_id):
         updated_by=current_user.id
     )
     
-    db.session.add(status_update)
-    db.session.commit()
-    
-    # Send notification to customer (implement notification system)
-    send_notification(order.customer_id, f"Order {order.order_number} status updated to {new_status}")
-    
-    flash('Order status updated successfully!', 'success')
-    return redirect(url_for('order_tracking', order_id=order.id))
+    try:
+        db.session.add(status_update)
+        db.session.commit()
+        
+        # Verify order has an ID after commit
+        if not order.id:
+            raise ValueError("Order ID not available after database commit")
+        
+        # Send notification to customer (implement notification system)
+        send_notification(order.customer_id, f"Order {order.order_number} status updated to {new_status}")
+        
+        flash('Order status updated successfully!', 'success')
+        return redirect(url_for('order_tracking', order_id=order.id))
+    except Exception as e:
+        db.session.rollback()
+        flash('An error occurred while updating order status. Please try again.', 'error')
+        return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/complaints')
 @login_required
@@ -751,19 +770,33 @@ def rate_order(order_id):
     order = Order.query.get_or_404(order_id)
     if current_user.id != order.customer_id:
         flash('Access denied.', 'error')
-        return redirect(url_for('order_tracking', order_id=order.id))
+        if order and order.id:
+            return redirect(url_for('order_tracking', order_id=order.id))
+        else:
+            return redirect(url_for('customer_dashboard'))
     try:
         rating = float(request.form.get('rating'))
     except (TypeError, ValueError):
         flash('Invalid rating value.', 'error')
-        return redirect(url_for('order_tracking', order_id=order.id))
+        if order and order.id:
+            return redirect(url_for('order_tracking', order_id=order.id))
+        else:
+            return redirect(url_for('customer_dashboard'))
     if 0 <= rating <= 5:
-        order.rating = rating
-        db.session.commit()
-        flash('Thank you for rating your order!', 'success')
+        try:
+            order.rating = rating
+            db.session.commit()
+            flash('Thank you for rating your order!', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash('An error occurred while saving your rating. Please try again.', 'error')
     else:
         flash('Invalid rating value.', 'error')
-    return redirect(url_for('order_tracking', order_id=order.id))
+    
+    if order and order.id:
+        return redirect(url_for('order_tracking', order_id=order.id))
+    else:
+        return redirect(url_for('customer_dashboard'))
 
 @app.route('/order/<int:order_id>/feedback', methods=['POST'])
 @login_required
@@ -1245,4 +1278,11 @@ def download_invoice(order_id):
     buffer.seek(0)
 
     filename = f"Invoice_{order.order_number}.pdf"
-    return send_file(buffer, as_attachment=True, download_name=filename, mimetype='application/pdf')    
+    return send_file(buffer, as_attachment=True, download_name=filename, mimetype='application/pdf')
+
+
+# Global error handler for BuildError
+@app.errorhandler(BuildError)
+def handle_build_error(e):
+    flash('URL generation error. Please try again or contact support.', 'error')
+    return redirect(url_for('index'))    
